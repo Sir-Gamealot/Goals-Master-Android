@@ -8,6 +8,9 @@ import android.preference.PreferenceManager;
  * Created by Tudor Tihan on 4/15/2017.
  */
 
+/**
+ * Manages local app settings via SharedPreference.
+ */
 public class AppConfig {
 
     /**
