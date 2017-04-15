@@ -4,17 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.goalsmaster.goalsmaster.WelcomeActivity">
+    tools:context="com.goalsmaster.goalsmaster.activities.WelcomeActivity">
 
     <TextView
-        app:layout_constraintDimensionRatio=""
+        android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/welcome"
-        android:layout_margin="32dp"
+        android:padding="32dp"
         android:gravity="center"
+        android:text="@string/welcome"
         android:textSize="18sp"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp" />
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
+    <ImageView
+        android:id="@+id/fingerprint"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignBottom="@+id/text"
+        android:layout_centerHorizontal="true"
+        app:srcCompat="@drawable/ic_fingerprint" />
 
 </RelativeLayout>
