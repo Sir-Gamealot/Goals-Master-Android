@@ -13,23 +13,27 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/nav_logo"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:layout_gravity="left"
+        android:src="@drawable/ic_person_large"
         app:srcCompat="@android:drawable/sym_def_app_icon" />
 
     <TextView
+        android:id="@+id/nav_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="Joe User"
+        android:text="Android Studio"
+        android:layout_gravity="left"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/nav_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="joe.user@email.com" />
+        android:text="android.studio@android.com" />
 
 </LinearLayout>

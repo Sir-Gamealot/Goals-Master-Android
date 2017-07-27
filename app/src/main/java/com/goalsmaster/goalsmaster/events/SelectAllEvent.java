@@ -1,0 +1,13 @@
+package com.goalsmaster.goalsmaster.events;
+
+/**
+ * Created by tudor on 5/8/2017.
+ */
+
+public class SelectAllEvent {
+    public final boolean state;
+
+    public SelectAllEvent(boolean state) {
+        this.state = state;
+    }
+}

@@ -4,7 +4,7 @@
     <!-- Welcome Screen -->
     <string name="welcome">Welcome to the Goals Master App.\n\n
         Please take a seat and strap in your seat belt.\n\n
-        We are going to help you focus on tasks that are directly related to your goals so that you succeed at achieving your goals!</string>
+        We are going to help you focus on tasks that are directly related to your goals so that you succeed at achieving them!</string>
 
     <!-- Main Screen -->
     <string name="title_activity_main">MainActivity</string>
@@ -13,4 +13,10 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <!-- Map Screen -->
+    <string name="title_activity_maps">Map</string>
+    <string name="action_map">Map all</string>
+    <string name="action_map_short">Map</string>
+    <string name="action_calendar">Calendar</string>
+    <string name="action_calendar_short">Cal</string>
 </resources>
