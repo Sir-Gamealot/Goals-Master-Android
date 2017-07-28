@@ -5,9 +5,12 @@ package com.goalsmaster.goalsmaster.other;
  */
 public enum FragmentTypes {
     Tasks,
+    Goals,
     Users,
     AddTask,
     EditTask,
     AddUser,
     EditUser,
+    AddGoal,
+    EditGoal,
 }
