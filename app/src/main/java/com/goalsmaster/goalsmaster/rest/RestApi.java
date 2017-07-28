@@ -33,6 +33,7 @@ import static android.content.ContentValues.TAG;
 public class RestApi {
     private static Retrofit HANDLE;
     private static TaskApi TASK_API;
+    private static GoalApi GOAL_API;
 
     private static synchronized Retrofit getRetrofit(final Context context) {
         if(null == HANDLE) {
@@ -86,6 +87,7 @@ public class RestApi {
                     .build();
 
             TASK_API = getRetrofit(context).create(TaskApi.class);
+            GOAL_API = getRetrofit(context).create(GoalApi.class);
         }
 
         return HANDLE;
@@ -95,6 +97,12 @@ public class RestApi {
         Log.d(TAG, "$$$ Create task api");
         getRetrofit(context);
         return TASK_API;
+    }
+
+    public static synchronized GoalApi getGoalApi(Context context) {
+        Log.d(TAG, "$$$ Create goal api");
+        getRetrofit(context);
+        return GOAL_API;
     }
 
     private static final String[] DATE_FORMATS = new String[] {

@@ -7,6 +7,10 @@
             android:icon="@drawable/ic_timer"
             android:title="Task" />
         <item
+            android:id="@+id/nav_goals"
+            android:icon="@drawable/ic_stats"
+            android:title="Goals" />
+        <item
             android:id="@+id/nav_users"
             android:icon="@drawable/ic_person"
             android:title="Users" />

@@ -2,17 +2,12 @@ package com.goalsmaster.goalsmaster.fragments;
 
 
 import android.app.DatePickerDialog;
-
-import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,42 +16,36 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
-import com.squareup.picasso.Picasso;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Id;
-import com.goalsmaster.goalsmaster.data.Task;
+import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.events.CancelEvent;
-import com.goalsmaster.goalsmaster.events.TaskItem;
+import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
+import com.goalsmaster.goalsmaster.events.GoalItem;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
 import com.goalsmaster.goalsmaster.other.FabMenu;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
 import com.goalsmaster.goalsmaster.rest.RestApi;
-import com.goalsmaster.goalsmaster.rest.TaskApi;
+import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.utils.ViewUtils;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import de.keyboardsurfer.android.widget.crouton.Crouton;
-import de.keyboardsurfer.android.widget.crouton.Style;
+import butterknife.OnItemSelected;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -66,15 +55,14 @@ import static android.app.Activity.RESULT_OK;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link AddEditTaskFragment#newInstance} factory method to
+ * Use the {@link AddEditGoalFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddEditTaskFragment extends BaseFragment {
+public class AddEditGoalFragment extends BaseFragment {
     private static final String ARG_IS_EDITABLE = "IS_EDITABLE";
     private static final String ARG_ITEM_ID = "ARG_ITEM_ID";
-    public static final int REQ_CODE_MAP_LOCATION = 2000;
 
-    public static final String TAG = AddEditTaskFragment.class.getSimpleName();
+    public static final String TAG = AddEditGoalFragment.class.getSimpleName();
 
     private Boolean isEditable;
     private long itemId;
@@ -91,11 +79,14 @@ public class AddEditTaskFragment extends BaseFragment {
     @BindView(R.id.btnAction)
     public Button btnAction;
 
-    @BindView(R.id.mapView)
-    public ImageView mapView;
+    @BindView(R.id.ivPhoto)
+    public ImageView photoView;
 
     @BindView(R.id.addEditMain)
     public ConstraintLayout layout;
+
+    @BindView(R.id.spinPriority)
+    public Spinner spinPriority;
 
     private long userId;
     private String title;
@@ -104,9 +95,8 @@ public class AddEditTaskFragment extends BaseFragment {
     private long date_year;
     private long date_month;
     private long date_day;
-    private long durationInSeconds;
-    private double latitude;
-    private double longitude;
+    private String priority = "Absolutely";
+    private String photo = "NONE";
 
     private View.OnTouchListener touchHideKeyboardListener = new View.OnTouchListener() {
         @Override
@@ -135,36 +125,35 @@ public class AddEditTaskFragment extends BaseFragment {
                 setDate(new Date(year-1900, month, dayOfMonth, 0, 0));
             }
         }, (int)date_year, (int)date_month, (int)date_day);
-        datePickerDialog.setTitle("On which date is this task due?");
+        datePickerDialog.setTitle("On which date is this goal due?");
         datePickerDialog.show();
     }
 
-    @OnClick(R.id.mapView)
+    @OnClick(R.id.ivPhoto)
     public void onMapViewClick(View sender) {
         EventBus.getDefault().post(new ToastMessage("Not implemented yet!"));
     }
 
     @OnClick(R.id.btnAction)
     public void onActionClick(View sender) {
-        if(isEditable == false) {
+        if (isEditable == false) {
             // Insert
             if (dataValidated()) {
-                // Create new task
-                TaskApi api = RestApi.getTaskApi(getContext());
-                Call<Id> call = api.createTask(
+                // Create new goal
+                GoalApi api = RestApi.getGoalApi(getContext());
+                Call<Id> call = api.createGoal(
                         getUserId(),
                         getTitle(),
                         getDescription(),
                         getDate(),
-                        getDuration(),
-                        getLatitude(),
-                        getLongitude()
+                        getPriority(),
+                        getPhoto()
                 );
                 try {
                     call.enqueue(new Callback<Id>() {
                         @Override
                         public void onResponse(Call<Id> call, Response<Id> response) {
-                            if(response.code() == 201) {
+                            if (response.code() == 201) {
                                 Id id = response.body();
                                 saveMapToCache(id.getId());
                                 String msg = id.toString();
@@ -172,7 +161,7 @@ public class AddEditTaskFragment extends BaseFragment {
                                 EventBus.getDefault().post(new CancelEvent());
                                 EventBus.getDefault().post(new ServerDataUpdatedEvent());
                             } else {
-                                EventBus.getDefault().post(new ToastMessage("Error: could not insert task."));
+                                EventBus.getDefault().post(new ToastMessage("Error: could not insert goal."));
                             }
                         }
 
@@ -189,34 +178,33 @@ public class AddEditTaskFragment extends BaseFragment {
         } else {
             // Update
             if (dataValidated()) {
-                // Create new task
-                TaskApi api = RestApi.getTaskApi(getContext());
+                // Create new goal
+                GoalApi api = RestApi.getGoalApi(getContext());
                 Date date = getDate();
                 date.setHours(1);
                 date.setMinutes(1);
                 date.setSeconds(1);
-                Call<String> call = api.updateTask(
-                                            getItemId(),
-                                            getUserId(),
-                                            getTitle(),
-                                            getDescription(),
-                                            date,
-                                            getDuration(),
-                                            getLatitude(),
-                                            getLongitude()
-                                    );
+                Call<String> call = api.updateGoal(
+                        getItemId(),
+                        getUserId(),
+                        getTitle(),
+                        getDescription(),
+                        date,
+                        getPriority(),
+                        getPhoto()
+                );
                 try {
                     call.enqueue(new Callback<String>() {
                         @Override
                         public void onResponse(Call<String> call, Response<String> response) {
-                            if(response.code() == 200) {
+                            if (response.code() == 200) {
                                 saveMapToCache(getItemId());
                                 String msg = String.valueOf(response.body());
                                 EventBus.getDefault().post(new ToastMessage(response.message() + " : \n" + msg));
                                 EventBus.getDefault().post(new CancelEvent());
                                 EventBus.getDefault().post(new ServerDataUpdatedEvent());
                             } else {
-                                EventBus.getDefault().post(new ToastMessage("Error: could not update task."));
+                                EventBus.getDefault().post(new ToastMessage("Error: could not update goal."));
                             }
                         }
 
@@ -231,6 +219,11 @@ public class AddEditTaskFragment extends BaseFragment {
                 }
             }
         }
+    }
+
+    @OnItemSelected(R.id.spinPriority)
+    public void onSpinItemSelected(Spinner spinner, int position) {
+        priority = (String)spinner.getItemAtPosition(position);
     }
 
     private void saveMapToCache(long id) {
@@ -269,23 +262,23 @@ public class AddEditTaskFragment extends BaseFragment {
         EventBus.getDefault().post(new CancelEvent());
     }
 
-    public AddEditTaskFragment() {
+    public AddEditGoalFragment() {
         // Required empty public constructor
     }
 
     @Override
     public FragmentTypes getFragmentType() {
-        return FragmentTypes.AddTask;
+        return FragmentTypes.AddGoal;
     }
 
     /**
      * Use this factory method to create a new instance of this fragment using the provided parameters.
      *
      * @param isEditable Turns the fragment into edit mode if set to true
-     * @return A new instance of fragment AddEditTaskFragment.
+     * @return A new instance of fragment AddEditGoalFragment.
      */
-    public static AddEditTaskFragment newInstance(Boolean isEditable) {
-        AddEditTaskFragment fragment = new AddEditTaskFragment();
+    public static AddEditGoalFragment newInstance(Boolean isEditable) {
+        AddEditGoalFragment fragment = new AddEditGoalFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_EDITABLE, isEditable);
         fragment.setArguments(args);
@@ -296,11 +289,11 @@ public class AddEditTaskFragment extends BaseFragment {
      * Use this factory method to create a new instance of this fragment using the provided parameters.
      *
      * @param isEditable Turns the fragment into edit mode if set to true
-     * @param itemId Tells the fragment to fetch Task with id = itemId for editing
-     * @return A new instance of fragment AddEditTaskFragment.
+     * @param itemId Tells the fragment to fetch Goal with id = itemId for editing
+     * @return A new instance of fragment AddEditGoalFragment.
      */
     public static BaseFragment newInstance(boolean isEditable, long itemId) {
-        AddEditTaskFragment fragment = new AddEditTaskFragment();
+        AddEditGoalFragment fragment = new AddEditGoalFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_EDITABLE, isEditable);
         args.putLong(ARG_ITEM_ID, itemId);
@@ -320,7 +313,7 @@ public class AddEditTaskFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_add_edit_task, container, false);
+        View view = inflater.inflate(R.layout.fragment_add_edit_goal, container, false);
         ButterKnife.bind(this, view);
         etTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -431,14 +424,6 @@ public class AddEditTaskFragment extends BaseFragment {
         }
     }
 
-    public long getDuration() {
-        return 3600; // Typically 1 hour
-    }
-
-    public void setDuration(long duration) {
-        this.durationInSeconds = duration;
-    }
-
     public long getUserId() {
         if(isEditable)
             return userId;
@@ -458,36 +443,19 @@ public class AddEditTaskFragment extends BaseFragment {
         return itemId;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLatitude(){
-        return latitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public double getLongitude(){
-        return longitude;
-    }
-
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void on(TaskItem event) {
-        Task task = event.getTask();
-        setItemId(task.getId());
-        setUserId(task.getUserId());
-        setTitle(task.getTitle());
-        setDescription(task.getDescription());
-        setDate(task.getDate());
-        setDuration(task.getDuration());
-        setLatitude(task.getLatitude());
-        setLongitude(task.getLongitude());
+    public void on(GoalItem event) {
+        Goal goal = event.getGoal();
+        setItemId(goal.getId());
+        setUserId(goal.getUserId());
+        setTitle(goal.getTitle());
+        setDescription(goal.getDescription());
+        setDate(goal.getDate());
+        setPriority(goal.getPriority());
+        setPhoto(goal.getPhoto());
         String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + getItemId() + ".jpg";
         Picasso.with(getContext()).setIndicatorsEnabled(true);
-        Picasso.with(getContext()).load(path).error(R.drawable.ic_location_add).into(mapView);
+        Picasso.with(getContext()).load(path).error(R.drawable.ic_location_add).into(photoView);
         EventBus.getDefault().removeStickyEvent(event);
     }
 
@@ -495,11 +463,11 @@ public class AddEditTaskFragment extends BaseFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQ_CODE_MAP_LOCATION && resultCode == RESULT_OK) {
+        /*if(requestCode == REQ_CODE_MAP_LOCATION && resultCode == RESULT_OK) {
             if(data == null) {
                 Toast.makeText(getContext(), "Data is null", Toast.LENGTH_SHORT).show();
             } else {
-                /*byte[] byteArray = data.getByteArrayExtra("snapshot");
+                byte[] byteArray = data.getByteArrayExtra("snapshot");
                 String path = getContext().getCacheDir().getAbsolutePath() + File.separator + "cache.png";
                 File f = null;
                 BufferedOutputStream bos = null;
@@ -522,13 +490,36 @@ public class AddEditTaskFragment extends BaseFragment {
                     }
                 }
                 Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                if(bmp != null) photoView.setImageBitmap(bmp);*/
+                if(bmp != null) photoView.setImageBitmap(bmp);
                 latitude = (double) data.getDoubleExtra("latitude", 0);
                 longitude = (double) data.getDoubleExtra("longitude", 0);
                 Picasso.with(getContext()).setIndicatorsEnabled(true);
                 String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + "cache.jpg";
-                Picasso.with(getContext()).load(path).error(R.drawable.ic_map).into(mapView);
+                Picasso.with(getContext()).load(path).error(R.drawable.ic_map).into(photoView);
+            }
+        }*/
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        for(int i=0; i<spinPriority.getCount(); i++) {
+            String s = (String) spinPriority.getItemAtPosition(i);
+            if(priority.equalsIgnoreCase(s)) {
+                spinPriority.setSelection(i);
+                break;
             }
         }
+        this.priority = priority;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

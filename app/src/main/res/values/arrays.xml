@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="priority_prompt">Choose a priority</string>
+
+    <string-array name="priority_entries">
+        <item>Absolutely</item>
+        <item>Better</item>
+        <item>Could</item>
+        <item>Delegate</item>
+        <item>Erase</item>
+    </string-array>
+
+</resources>

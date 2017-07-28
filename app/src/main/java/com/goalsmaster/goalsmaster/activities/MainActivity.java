@@ -24,8 +24,10 @@ import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.events.AllowedActionsChanged;
 import com.goalsmaster.goalsmaster.events.SwitchToEvent;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
+import com.goalsmaster.goalsmaster.fragments.AddEditGoalFragment;
 import com.goalsmaster.goalsmaster.fragments.AddEditTaskFragment;
 import com.goalsmaster.goalsmaster.fragments.BaseFragment;
+import com.goalsmaster.goalsmaster.fragments.GoalFragment;
 import com.goalsmaster.goalsmaster.fragments.TaskFragment;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
 import com.goalsmaster.goalsmaster.utils.SecurityUtils;
@@ -240,7 +242,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Menu nav_Menu = navigationView.getMenu();
         String roleName = UserHelper.getLoggedInRoleName();
-        if(Role.roleTitles[0].equals(roleName)) {
+        /*if(Role.roleTitles[0].equals(roleName)) {
             // Simple user
             nav_Menu.findItem(R.id.nav_users).setVisible(false);
             nav_Menu.findItem(R.id.nav_task).setChecked(true);
@@ -248,9 +250,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             // Admin
             nav_Menu.findItem(R.id.nav_task).setVisible(false);
             nav_Menu.findItem(R.id.nav_users).setChecked(true);
-        } else {
+        } else {*/
             nav_Menu.findItem(R.id.nav_task).setChecked(true);
-        }
+        /*}*/
     }
 
     @Override
@@ -307,6 +309,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     on(new ToastMessage("Sorry, only Supers can manage both users and tasks.", ToastMessage.Type.ALERT));
                 }
                 break;
+            case R.id.nav_goals:
+                if(!UserHelper.isLoggedUserAdmin(getApplicationContext())) {
+                    on(new SwitchToEvent(FragmentTypes.Goals));
+                } else {
+                    on(new ToastMessage("Sorry, only Supers can manage both users and goals.", ToastMessage.Type.ALERT));
+                }
+                break;
             case R.id.nav_users:
                 if(UserHelper.isLoggedUserAdmin(getApplicationContext()) || UserHelper.isLoggedUserSuper(getApplicationContext())) {
                     on(new SwitchToEvent(FragmentTypes.Users));
@@ -352,6 +361,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             case Tasks:
                 fragment = TaskFragment.newInstance(1);
                 break;
+            case Goals:
+                fragment = GoalFragment.newInstance(1);
+                break;
             default:
                 fragment = null;
                 break;
@@ -368,6 +380,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 break;
             case EditTask:
                 fragment = AddEditTaskFragment.newInstance(true);
+                break;
+            case AddGoal:
+                fragment = AddEditGoalFragment.newInstance(false);
+                break;
+            case EditGoal:
+                fragment = AddEditGoalFragment.newInstance(true);
                 break;
         }
 
