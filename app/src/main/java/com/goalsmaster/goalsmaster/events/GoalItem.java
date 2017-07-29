@@ -10,7 +10,7 @@ public class GoalItem {
     private Goal goal;
     public GoalItem(Goal goal) {
         this.goal = new Goal(goal.getId(), goal.getUserId(), goal.getTitle(),
-                goal.getDescription(), goal.getDate(), goal.getPriority(), goal.getPhoto());
+                goal.getDescription(), goal.getDate(), goal.getPriority(), goal.getPhotoId());
     }
 
     /**

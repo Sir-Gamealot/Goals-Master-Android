@@ -4,6 +4,7 @@ package com.goalsmaster.goalsmaster.fragments;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -18,20 +19,24 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.goalsmaster.goalsmaster.R;
-import com.goalsmaster.goalsmaster.data.Id;
 import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.events.CancelEvent;
-import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
 import com.goalsmaster.goalsmaster.events.GoalItem;
+import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
 import com.goalsmaster.goalsmaster.other.FabMenu;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
-import com.goalsmaster.goalsmaster.rest.RestApi;
-import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.utils.ViewUtils;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
@@ -46,11 +51,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemSelected;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-import static android.app.Activity.RESULT_OK;
 
 
 /**
@@ -65,7 +65,7 @@ public class AddEditGoalFragment extends BaseFragment {
     public static final String TAG = AddEditGoalFragment.class.getSimpleName();
 
     private Boolean isEditable;
-    private long itemId;
+    private String itemId;
 
     @BindView(R.id.etTitle)
     public EditText etTitle;
@@ -88,7 +88,7 @@ public class AddEditGoalFragment extends BaseFragment {
     @BindView(R.id.spinPriority)
     public Spinner spinPriority;
 
-    private long userId;
+    private String userId;
     private String title;
     private String description;
     private Date date;
@@ -96,7 +96,7 @@ public class AddEditGoalFragment extends BaseFragment {
     private long date_month;
     private long date_day;
     private String priority = "Absolutely";
-    private String photo = "NONE";
+    private String photoId = "NONE";
 
     private View.OnTouchListener touchHideKeyboardListener = new View.OnTouchListener() {
         @Override
@@ -140,14 +140,36 @@ public class AddEditGoalFragment extends BaseFragment {
             // Insert
             if (dataValidated()) {
                 // Create new goal
-                GoalApi api = RestApi.getGoalApi(getContext());
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                FirebaseUser user = mAuth.getCurrentUser();
+                String userId = (user != null ? user.getUid() : "error_null_user");
+                DatabaseReference goalsRef = database.getReference("Goals");
+                DatabaseReference goalRef = goalsRef.push();
+                final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
+                goalRef.setValue(goal)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                EventBus.getDefault().post(new ToastMessage("Goal inserted : \n" + goal.toString()));
+                                EventBus.getDefault().post(new CancelEvent());
+                                EventBus.getDefault().post(new ServerDataUpdatedEvent());
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                EventBus.getDefault().post(new ToastMessage("Error: could not insert goal."));
+                            }
+                        });
+                /*GoalApi api = RestApi.getGoalApi(getContext());
                 Call<Id> call = api.createGoal(
                         getUserId(),
                         getTitle(),
                         getDescription(),
                         getDate(),
                         getPriority(),
-                        getPhoto()
+                        getPhotoId()
                 );
                 try {
                     call.enqueue(new Callback<Id>() {
@@ -173,13 +195,20 @@ public class AddEditGoalFragment extends BaseFragment {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         } else {
             // Update
             if (dataValidated()) {
                 // Create new goal
-                GoalApi api = RestApi.getGoalApi(getContext());
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                FirebaseUser user = mAuth.getCurrentUser();
+                String userId = (user != null ? user.getUid() : "error_null_user");
+                DatabaseReference goalsRef = database.getReference("Goals");
+                DatabaseReference goalRef = goalsRef.push();
+                goalRef.setValue(new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate(), getPriority(), getPhotoId()));
+                /*GoalApi api = RestApi.getGoalApi(getContext());
                 Date date = getDate();
                 date.setHours(1);
                 date.setMinutes(1);
@@ -191,7 +220,7 @@ public class AddEditGoalFragment extends BaseFragment {
                         getDescription(),
                         date,
                         getPriority(),
-                        getPhoto()
+                        getPhotoId()
                 );
                 try {
                     call.enqueue(new Callback<String>() {
@@ -216,7 +245,7 @@ public class AddEditGoalFragment extends BaseFragment {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         }
     }
@@ -424,22 +453,22 @@ public class AddEditGoalFragment extends BaseFragment {
         }
     }
 
-    public long getUserId() {
+    public String getUserId() {
         if(isEditable)
             return userId;
         else
-            return 0;
+            return "null";
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public void setItemId(long id) {
+    public void setItemId(String id) {
         this.itemId = id;
     }
 
-    public long getItemId() {
+    public String getItemId() {
         return itemId;
     }
 
@@ -452,7 +481,7 @@ public class AddEditGoalFragment extends BaseFragment {
         setDescription(goal.getDescription());
         setDate(goal.getDate());
         setPriority(goal.getPriority());
-        setPhoto(goal.getPhoto());
+        setPhotoId(goal.getPhotoId());
         String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + getItemId() + ".jpg";
         Picasso.with(getContext()).setIndicatorsEnabled(true);
         Picasso.with(getContext()).load(path).error(R.drawable.ic_location_add).into(photoView);
@@ -515,11 +544,11 @@ public class AddEditGoalFragment extends BaseFragment {
         this.priority = priority;
     }
 
-    public String getPhoto() {
-        return photo;
+    public String getPhotoId() {
+        return photoId;
     }
 
-    public void setPhoto(String photo) {
-        this.photo = photo;
+    public void setPhotoId(String photoId) {
+        this.photoId = photoId;
     }
 }

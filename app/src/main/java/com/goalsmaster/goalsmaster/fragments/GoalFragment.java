@@ -217,7 +217,7 @@ public class GoalFragment extends BaseFragment {
             notes = "Goal";
         }
 
-        final long id = event.goal.getId();
+        final long id = event.goal.getId().hashCode();
         Snackbar.make(getView(), notes, Snackbar.LENGTH_LONG)
                 .setAction("Edit", new View.OnClickListener() {
                     @Override
@@ -231,7 +231,7 @@ public class GoalFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void on(GoalFragmentItemLongClick event) {
         Bundle bundle = new Bundle();
-        bundle.putLong(BaseFragment.S_ITEM_ID, event.goal.getId());
+        bundle.putLong(BaseFragment.S_ITEM_ID, event.goal.getId().hashCode());
         EventBus.getDefault().post(new SwitchToEvent(FragmentTypes.EditGoal));
         EventBus.getDefault().postSticky(new GoalItem(event.goal));
     }
@@ -317,7 +317,7 @@ public class GoalFragment extends BaseFragment {
         GoalApi api = RestApi.getGoalApi(getContext());
         int succeeded = 0, failed = 0;
         for (Goal selected : selectedArray) {
-            Call<String> call = api.deleteGoalById(selected.getId());
+            Call<String> call = api.deleteGoalById(selected.getId().hashCode());
             Response<String> response = null;
             try {
                 response = call.execute();

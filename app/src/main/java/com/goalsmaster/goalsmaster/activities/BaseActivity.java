@@ -12,14 +12,17 @@ import android.widget.Toast;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ResultCodes;
 import com.goalsmaster.goalsmaster.R;
+import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.other.Globals;
 import com.goalsmaster.goalsmaster.other.RequestCodes;
 import com.goalsmaster.goalsmaster.utils.AppConfig;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;

@@ -261,15 +261,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else {*/
             nav_Menu.findItem(R.id.nav_task).setChecked(true);
         /*}*/
-
-        // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        String userId = (user != null ? user.getUid() : "default");
-        DatabaseReference rootRef = database.getReference(userId);
-        DatabaseReference goalRef = rootRef.child("Goals").push();
-        goalRef.setValue(new Goal(1, 666, "Title 2", "Description 2", new Date(), "Absolutely", "ABCD"));
     }
 
     @Override
