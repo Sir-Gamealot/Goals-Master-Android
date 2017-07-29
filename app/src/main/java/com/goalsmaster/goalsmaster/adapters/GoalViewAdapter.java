@@ -11,12 +11,15 @@ import android.view.ViewGroup;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.activities.BaseActivity;
 import com.goalsmaster.goalsmaster.data.Goal;
+import com.goalsmaster.goalsmaster.data.Goals;
 import com.goalsmaster.goalsmaster.data.Task;
 import com.goalsmaster.goalsmaster.holders.GoalViewHolder;
 import com.goalsmaster.goalsmaster.holders.TaskViewHolder;
 import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.rest.RestApi;
 import com.goalsmaster.goalsmaster.rest.TaskApi;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -123,15 +126,13 @@ public class GoalViewAdapter extends BaseAdapter {
     }
 
     public void queryData() {
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference goals = db.getReference().child("Goals");
-        goals.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference goalsRef = Goals.getFirebaseNodeRef(context);
+        goalsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // dataSnapshot is the "Goals" node
+            public void onDataChange(DataSnapshot goalsSnapshot) {
+                if (goalsSnapshot.exists()) {
                     data.clear();
-                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                    for (DataSnapshot issue : goalsSnapshot.getChildren()) {
                         GenericTypeIndicator<Goal> t = new GenericTypeIndicator<Goal>() {};
                         Goal goal = issue.getValue(t);
                         data.add(goal);

@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Goal;
+import com.goalsmaster.goalsmaster.data.Goals;
 import com.goalsmaster.goalsmaster.events.CancelEvent;
 import com.goalsmaster.goalsmaster.events.GoalItem;
 import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
@@ -140,11 +141,7 @@ public class AddEditGoalFragment extends BaseFragment {
             // Insert
             if (dataValidated()) {
                 // Create new goal
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userId = (user != null ? user.getUid() : "error_null_user");
-                DatabaseReference goalsRef = database.getReference("Goals");
+                DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
                 DatabaseReference goalRef = goalsRef.push();
                 final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
                 goalRef.setValue(goal)
@@ -167,11 +164,7 @@ public class AddEditGoalFragment extends BaseFragment {
             // Update
             if (dataValidated()) {
                 // Edit existing goal
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userId = (user != null ? user.getUid() : "error_null_user");
-                DatabaseReference goalsRef = database.getReference("Goals");
+                DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
                 DatabaseReference goalRef = goalsRef.child(getItemId());
                 final Goal goal = new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
                 goalRef.setValue(goal)

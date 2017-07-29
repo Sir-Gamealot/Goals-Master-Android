@@ -23,6 +23,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.events.AllowedActionsChanged;
+import com.goalsmaster.goalsmaster.events.LogOffRequest;
 import com.goalsmaster.goalsmaster.events.SwitchToEvent;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
 import com.goalsmaster.goalsmaster.fragments.AddEditGoalFragment;
@@ -33,6 +34,7 @@ import com.goalsmaster.goalsmaster.fragments.TaskFragment;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
 import com.goalsmaster.goalsmaster.other.Globals;
 import com.goalsmaster.goalsmaster.utils.AppConfig;
+import com.goalsmaster.goalsmaster.utils.LoggingUtils;
 import com.goalsmaster.goalsmaster.utils.SecurityUtils;
 import com.goalsmaster.goalsmaster.utils.UserHelper;
 import com.goalsmaster.goalsmaster.data.Role;
@@ -332,11 +334,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 }
                 break;
             case R.id.nav_log_off:
-                //EventBus.getDefault().post(new LogOffRequest());
+                EventBus.getDefault().post(new LogOffRequest(false));
                 //EventBus.getDefault().post(new ToastMessage("User is not logged in", ToastMessage.Type.ALERT));
-                firebaseAuth.signOut();
-                AppConfig.putBoolean(getApplicationContext(), Globals.S_SMART_LOCK_STATE, false);
-                recreate();
                 break;
             /*case R.id.nav_settings:
                 startSettingsActivity();
