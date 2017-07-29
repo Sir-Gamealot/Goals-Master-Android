@@ -20,6 +20,7 @@ import com.goalsmaster.goalsmaster.rest.RestApi;
 import com.goalsmaster.goalsmaster.rest.TaskApi;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -127,36 +128,39 @@ public class GoalViewAdapter extends BaseAdapter {
 
     public void queryData() {
         DatabaseReference goalsRef = Goals.getFirebaseNodeRef(context);
-        goalsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot goalsSnapshot) {
-                if (goalsSnapshot.exists()) {
-                    data.clear();
-                    for (DataSnapshot issue : goalsSnapshot.getChildren()) {
-                        GenericTypeIndicator<Goal> t = new GenericTypeIndicator<Goal>() {};
-                        Goal goal = issue.getValue(t);
-                        data.add(goal);
-                    }
-                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
-                    for (int i = 0; i < data.size(); i++) {
-                        GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
-                        Goal goal = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
-                        if(val >= 0) {
-                            visualState.onoff = true;
+        goalsRef.orderByChild("timestamp")
+                .startAt(filterDateFrom.getTime())
+                .endAt(filterDateTo.getTime())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot goalsSnapshot) {
+                    if (goalsSnapshot.exists()) {
+                        data.clear();
+                        for (DataSnapshot issue : goalsSnapshot.getChildren()) {
+                            GenericTypeIndicator<Goal> t = new GenericTypeIndicator<Goal>() {};
+                            Goal goal = issue.getValue(t);
+                            data.add(goal);
                         }
-                        dataState.put(goal, visualState);
+                        dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
+                        for (int i = 0; i < data.size(); i++) {
+                            GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
+                            Goal goal = data.get(i);
+                            int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
+                            if(val >= 0) {
+                                visualState.onoff = true;
+                            }
+                            dataState.put(goal, visualState);
+                        }
+                        notifyItemRangeChanged(0, data.size());
                     }
-                    notifyItemRangeChanged(0, data.size());
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                data.clear();
-                dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
-                notifyDataSetChanged();
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    data.clear();
+                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
+                    notifyDataSetChanged();
+                }
         });
     }
 

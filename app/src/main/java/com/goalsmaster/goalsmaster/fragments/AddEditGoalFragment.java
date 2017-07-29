@@ -143,7 +143,7 @@ public class AddEditGoalFragment extends BaseFragment {
                 // Create new goal
                 DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
                 DatabaseReference goalRef = goalsRef.push();
-                final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
+                final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate().getTime(), getPriority(), getPhotoId());
                 goalRef.setValue(goal)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -166,7 +166,7 @@ public class AddEditGoalFragment extends BaseFragment {
                 // Edit existing goal
                 DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
                 DatabaseReference goalRef = goalsRef.child(getItemId());
-                final Goal goal = new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
+                final Goal goal = new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate().getTime(), getPriority(), getPhotoId());
                 goalRef.setValue(goal)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -415,7 +415,7 @@ public class AddEditGoalFragment extends BaseFragment {
         setUserId(goal.getUserId());
         setTitle(goal.getTitle());
         setDescription(goal.getDescription());
-        setDate(goal.getDate());
+        setDate(new Date(goal.getTimestamp()));
         setPriority(goal.getPriority());
         setPhotoId(goal.getPhotoId());
         String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + getItemId() + ".jpg";

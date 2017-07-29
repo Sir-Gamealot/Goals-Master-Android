@@ -1,7 +1,6 @@
 package com.goalsmaster.goalsmaster.data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -27,9 +26,9 @@ public class Goal implements Serializable, Parcelable {
     @SerializedName("description")
     @Expose
     private String description;
-    @SerializedName("date")
+    @SerializedName("timestamp")
     @Expose
-    private Date date;
+    private long timestamp;
     @SerializedName("priority")
     @Expose
     private String priority;
@@ -48,7 +47,7 @@ public class Goal implements Serializable, Parcelable {
             instance.userId = ((String) in.readValue((String.class.getClassLoader())));
             instance.title = ((String) in.readValue((String.class.getClassLoader())));
             instance.description = ((String) in.readValue((String.class.getClassLoader())));
-            instance.date = ((Date) in.readValue((Date.class.getClassLoader())));
+            instance.timestamp = ((long) in.readValue((Long.class.getClassLoader())));
             instance.priority = ((String) in.readValue((String.class.getClassLoader())));
             instance.photoId = ((String) in.readValue((String.class.getClassLoader())));
             return instance;
@@ -73,16 +72,16 @@ public class Goal implements Serializable, Parcelable {
      * @param priority
      * @param description
      * @param userId
-     * @param date
+     * @param timestamp
      * @param photoId
      */
-    public Goal(String id, String userId, String title, String description, Date date, String priority, String photoId) {
+    public Goal(String id, String userId, String title, String description, long timestamp, String priority, String photoId) {
         super();
         this.id = id;
         this.userId = userId;
         this.title = title;
         this.description = description;
-        this.date = date;
+        this.timestamp = timestamp;
         this.priority = priority;
         this.photoId = photoId;
     }
@@ -139,16 +138,16 @@ public class Goal implements Serializable, Parcelable {
         return this;
     }
 
-    public Date getDate() {
-        return date;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public Goal withDate(Date date) {
-        this.date = date;
+    public Goal withTimestamp(long timestamp) {
+        this.timestamp = timestamp;
         return this;
     }
 
@@ -190,7 +189,7 @@ public class Goal implements Serializable, Parcelable {
                 .append(userId)
                 .append(title)
                 .append(description)
-                .append(date)
+                .append(timestamp)
                 .append(priority)
                 .append(photoId)
                 .toHashCode();
@@ -210,7 +209,7 @@ public class Goal implements Serializable, Parcelable {
                 .append(userId, rhs.userId)
                 .append(title, rhs.title)
                 .append(description, rhs.description)
-                .append(date, rhs.date)
+                .append(timestamp, rhs.timestamp)
                 .append(priority, rhs.priority)
                 .append(photoId, rhs.photoId)
                 .isEquals();
@@ -221,7 +220,7 @@ public class Goal implements Serializable, Parcelable {
         dest.writeValue(userId);
         dest.writeValue(title);
         dest.writeValue(description);
-        dest.writeValue(date);
+        dest.writeValue(timestamp);
         dest.writeValue(priority);
         dest.writeValue(photoId);
     }
