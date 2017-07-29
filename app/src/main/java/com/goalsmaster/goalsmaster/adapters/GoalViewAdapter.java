@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.goalsmaster.goalsmaster.R;
+import com.goalsmaster.goalsmaster.activities.BaseActivity;
 import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.data.Task;
 import com.goalsmaster.goalsmaster.holders.GoalViewHolder;
@@ -16,6 +17,12 @@ import com.goalsmaster.goalsmaster.holders.TaskViewHolder;
 import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.rest.RestApi;
 import com.goalsmaster.goalsmaster.rest.TaskApi;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,7 +107,7 @@ public class GoalViewAdapter extends BaseAdapter {
         ArrayList<Integer> selectionList = new ArrayList<>();
         List<Goal> list = getSelected();
         for(Goal t: list)
-            selectionList.add((int) t.getId());
+            selectionList.add((int) t.getId().hashCode());
         outState.putIntegerArrayList(KEY_SELECTIONS, selectionList);
     }
 
@@ -114,14 +121,58 @@ public class GoalViewAdapter extends BaseAdapter {
         Arrays.sort(oldSelections);
     }
 
-
     public void queryData() {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference goals = db.getReference().child("Goals");
+        goals.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // dataSnapshot is the "Goals" node
+                    data.clear();
+                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                        // do something with the individual "issues"
+                        Goal goal = new Goal(
+                                (String)issue.child("id").getValue(),
+                                (String)issue.child("userId").getValue(),
+                                (String)issue.child("title").getValue(),
+                                (String)issue.child("description").getValue(),
+                                new Date((long)issue.child("date").child("time").getValue()),
+                                (String)issue.child("priority").getValue(),
+                                (String)issue.child("photoId").getValue()
+                                );
+                        data.add(goal);
+                    }
+                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
+                    for (int i = 0; i < data.size(); i++) {
+                        GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
+                        Goal goal = data.get(i);
+                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
+                        if(val >= 0) {
+                            visualState.onoff = true;
+                        }
+                        dataState.put(goal, visualState);
+                    }
+                    notifyItemRangeChanged(0, data.size());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                data.clear();
+                dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    /*public void queryData() {
         GoalApi api = RestApi.getGoalApi(context);
         long id;
-        /*if(LoginActivity.isLoggedUserSuper())
-            id = 0;
-        else
-            id = LoginActivity.getLoggedInUserId();*/
+        // if(LoginActivity.isLoggedUserSuper())
+        //  id = 0;
+        // else
+        //  id = LoginActivity.getLoggedInUserId();
         Call<List<Goal>> call = api.findGoalByDateRange(0, filterDateFrom, filterDateTo);
         call.enqueue(new Callback<List<Goal>>() {
             @Override
@@ -134,7 +185,7 @@ public class GoalViewAdapter extends BaseAdapter {
                     for (int i = 0; i < data.size(); i++) {
                         GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
                         Goal goal = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId());
+                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
                         if(val >= 0) {
                             visualState.onoff = true;
                         }
@@ -156,7 +207,7 @@ public class GoalViewAdapter extends BaseAdapter {
                 notifyDataSetChanged();
             }
         });
-    }
+    }*/
 
     /*private void setCountedHoursPerDay(List<Goal> data) {
         if(data.size() == 0)

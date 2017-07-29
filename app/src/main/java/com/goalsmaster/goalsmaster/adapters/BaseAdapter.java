@@ -9,9 +9,9 @@ import com.goalsmaster.goalsmaster.holders.BaseViewHolder;
  * Created by tudor on 5/11/2017.
  */
 
-public abstract class BaseAdapter<DataObject,ViewHolder> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class BaseAdapter<Data,State> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-   private Class viewHolderClass;
+    private Class viewHolderClass;
 
     protected BaseAdapter(Class viewHolderClass) {
         this.viewHolderClass = viewHolderClass;
@@ -31,12 +31,12 @@ public abstract class BaseAdapter<DataObject,ViewHolder> extends RecyclerView.Ad
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Object item = getItem(position);
-        Object state = getState(item);
+        Data item = getItem(position);
+        State state = getState(item);
         //if(item != null && state != null)
             ((BaseViewHolder)holder).bind(item, state);
     }
 
-    protected abstract Object getItem(int position);
-    protected abstract Object getState(Object item);
+    protected abstract Data getItem(int position);
+    protected abstract State getState(Object item);
 }

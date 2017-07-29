@@ -5,7 +5,6 @@ import java.util.Date;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -18,10 +17,10 @@ public class Goal implements Serializable, Parcelable {
 
     @SerializedName("id")
     @Expose
-    private long id;
+    private String id;
     @SerializedName("user_id")
     @Expose
-    private long userId;
+    private String userId;
     @SerializedName("title")
     @Expose
     private String title;
@@ -34,9 +33,9 @@ public class Goal implements Serializable, Parcelable {
     @SerializedName("priority")
     @Expose
     private String priority;
-    @SerializedName("photo")
+    @SerializedName("photoId")
     @Expose
-    private String photo;
+    private String photoId;
     public final static Parcelable.Creator<Goal> CREATOR = new Creator<Goal>() {
 
 
@@ -45,13 +44,13 @@ public class Goal implements Serializable, Parcelable {
         })
         public Goal createFromParcel(Parcel in) {
             Goal instance = new Goal();
-            instance.id = ((long) in.readValue((long.class.getClassLoader())));
-            instance.userId = ((long) in.readValue((long.class.getClassLoader())));
+            instance.id = ((String) in.readValue((String.class.getClassLoader())));
+            instance.userId = ((String) in.readValue((String.class.getClassLoader())));
             instance.title = ((String) in.readValue((String.class.getClassLoader())));
             instance.description = ((String) in.readValue((String.class.getClassLoader())));
             instance.date = ((Date) in.readValue((Date.class.getClassLoader())));
             instance.priority = ((String) in.readValue((String.class.getClassLoader())));
-            instance.photo = ((String) in.readValue((String.class.getClassLoader())));
+            instance.photoId = ((String) in.readValue((String.class.getClassLoader())));
             return instance;
         }
 
@@ -75,9 +74,9 @@ public class Goal implements Serializable, Parcelable {
      * @param description
      * @param userId
      * @param date
-     * @param photo
+     * @param photoId
      */
-    public Goal(long id, long userId, String title, String description, Date date, String priority, String photo) {
+    public Goal(String id, String userId, String title, String description, Date date, String priority, String photoId) {
         super();
         this.id = id;
         this.userId = userId;
@@ -85,31 +84,31 @@ public class Goal implements Serializable, Parcelable {
         this.description = description;
         this.date = date;
         this.priority = priority;
-        this.photo = photo;
+        this.photoId = photoId;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Goal withId(long id) {
+    public Goal withId(String id) {
         this.id = id;
         return this;
     }
 
-    public long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public Goal withUserId(long userId) {
+    public Goal withUserId(String userId) {
         this.userId = userId;
         return this;
     }
@@ -166,16 +165,16 @@ public class Goal implements Serializable, Parcelable {
         return this;
     }
 
-    public String getPhoto() {
-        return photo;
+    public String getPhotoId() {
+        return photoId;
     }
 
-    public void setPhoto(String photo) {
-        this.photo = photo;
+    public void setPhotoId(String photoId) {
+        this.photoId = photoId;
     }
 
     public Goal withPhoto(String photo) {
-        this.photo = photo;
+        this.photoId = photo;
         return this;
     }
 
@@ -193,7 +192,7 @@ public class Goal implements Serializable, Parcelable {
                 .append(description)
                 .append(date)
                 .append(priority)
-                .append(photo)
+                .append(photoId)
                 .toHashCode();
     }
 
@@ -213,7 +212,7 @@ public class Goal implements Serializable, Parcelable {
                 .append(description, rhs.description)
                 .append(date, rhs.date)
                 .append(priority, rhs.priority)
-                .append(photo, rhs.photo)
+                .append(photoId, rhs.photoId)
                 .isEquals();
     }
 
@@ -224,7 +223,7 @@ public class Goal implements Serializable, Parcelable {
         dest.writeValue(description);
         dest.writeValue(date);
         dest.writeValue(priority);
-        dest.writeValue(photo);
+        dest.writeValue(photoId);
     }
 
     public int describeContents() {
