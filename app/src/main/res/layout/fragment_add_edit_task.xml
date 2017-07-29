@@ -64,7 +64,7 @@
         app:layout_constraintHorizontal_bias="0.0" />
 
     <ImageView
-        android:id="@+id/mapView"
+        android:id="@+id/ivPhoto"
         android:layout_width="111dp"
         android:layout_height="90dp"
         android:src="@drawable/ic_map"

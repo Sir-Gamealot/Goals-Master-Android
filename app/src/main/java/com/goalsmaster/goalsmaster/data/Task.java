@@ -1,14 +1,13 @@
 package com.goalsmaster.goalsmaster.data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -19,22 +18,23 @@ public class Task implements Serializable, Parcelable {
 
     @SerializedName("id")
     @Expose
-    private long id;
+    private String id;
+    @SerializedName("userId")
+    @Expose
+    private String userId;
     @SerializedName("title")
     @Expose
     private String title;
     @SerializedName("description")
     @Expose
     private String description;
-    @SerializedName("date")
+    @SerializedName("timestamp")
     @Expose
-    private Date date;
+    private long timestamp;
     @SerializedName("duration")
     @Expose
     private long duration;
-    @SerializedName("userId")
-    @Expose
-    private long userId;
+
     @SerializedName("latitude")
     @Expose
     private double latitude;
@@ -50,11 +50,11 @@ public class Task implements Serializable, Parcelable {
         })
         public Task createFromParcel(Parcel in) {
             Task instance = new Task();
-            instance.id = ((long) in.readValue((long.class.getClassLoader())));
-            instance.userId = ((long) in.readValue((long.class.getClassLoader())));
+            instance.id = ((String) in.readValue((String.class.getClassLoader())));
+            instance.userId = ((String) in.readValue((String.class.getClassLoader())));
             instance.title = ((String) in.readValue((String.class.getClassLoader())));
             instance.description = ((String) in.readValue((String.class.getClassLoader())));
-            instance.date = ((Date) in.readValue((Date.class.getClassLoader())));
+            instance.timestamp = ((long) in.readValue((long.class.getClassLoader())));
             instance.duration = ((long) in.readValue((long.class.getClassLoader())));
             instance.latitude = ((double) in.readValue((double.class.getClassLoader())));
             instance.longitude = ((double) in.readValue((double.class.getClassLoader())));
@@ -80,35 +80,35 @@ public class Task implements Serializable, Parcelable {
      * @param title
      * @param description
      * @param duration
-     * @param date
+     * @param timestamp
      * @param latitude
      * @param longitude
      */
-    public Task(long id, long userId, String title, String description, Date date, long duration, double latitude, double longitude) {
+    public Task(String id, String userId, String title, String description, long timestamp, long duration, double latitude, double longitude) {
         super();
         this.id = id;
         this.userId = userId;
         this.title = title;
         this.description = description;
-        this.date = date;
+        this.timestamp = timestamp;
         this.duration = duration;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -128,12 +128,12 @@ public class Task implements Serializable, Parcelable {
         this.description = description;
     }
 
-    public Date getDate() {
-        return date;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public long getDuration() {
@@ -167,20 +167,6 @@ public class Task implements Serializable, Parcelable {
 
     @Override
     public int hashCode() {
-        /*HashCodeBuilder hashCodeBuilder = new HashCodeBuilder()
-                    .append(id)
-                    .append(title)
-                    .append(notes)
-                    .append(date)
-                    .append(duration)
-                    .append(userId)
-                    .append(distance)
-                    .append(latitude)
-                    .append(longitude);
-
-        int hashCode = hashCodeBuilder.toHashCode();
-        Log.d(TAG, String.format("Task( [id=%d] -> hash[%d] );", getId(), Long.valueOf(hashCode)));
-        return hashCode;*/
         return new HashCodeBuilder()
                 .append(id)
                 //.append(userId)
@@ -207,7 +193,7 @@ public class Task implements Serializable, Parcelable {
                     .append(userId, rhs.userId)
                     .append(title, rhs.title)
                     .append(description, rhs.description)
-                    .append(date, rhs.date)
+                    .append(timestamp, rhs.timestamp)
                     .append(duration, rhs.duration)
                     .append(latitude, rhs.latitude)
                     .append(longitude, rhs.longitude)
@@ -215,11 +201,11 @@ public class Task implements Serializable, Parcelable {
     }
 
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(id);
-        dest.writeValue(userId);
+        dest.writeString(id);
+        dest.writeString(userId);
         dest.writeString(title);
         dest.writeString(description);
-        dest.writeValue(date);
+        dest.writeLong(timestamp);
         dest.writeValue(duration);
         dest.writeValue(latitude);
         dest.writeValue(longitude);
@@ -229,7 +215,4 @@ public class Task implements Serializable, Parcelable {
         return 0;
     }
 
-    public boolean hasLocation() {
-        return (Math.abs(getLatitude()) > 0.0) && (Math.abs(getLongitude()) > 0.0);
-    }
 }

@@ -219,7 +219,7 @@ public class TaskFragment extends BaseFragment {
             notes = "Task";
         }
 
-        final long id = event.task.getId();
+        final int id = event.task.getId().hashCode();
         Snackbar.make(getView(), notes, Snackbar.LENGTH_LONG)
                 .setAction("Edit", new View.OnClickListener() {
                     @Override
@@ -233,7 +233,7 @@ public class TaskFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void on(TaskFragmentItemLongClick event) {
         Bundle bundle = new Bundle();
-        bundle.putLong(BaseFragment.S_ITEM_ID, event.task.getId());
+        bundle.putLong(BaseFragment.S_ITEM_ID, event.task.getId().hashCode());
         EventBus.getDefault().post(new SwitchToEvent(FragmentTypes.EditTask));
         EventBus.getDefault().postSticky(new TaskItem(event.task));
     }
@@ -319,7 +319,7 @@ public class TaskFragment extends BaseFragment {
         TaskApi api = RestApi.getTaskApi(getContext());
         int succeeded = 0, failed = 0;
         for (Task selected : selectedArray) {
-            Call<String> call = api.deleteTaskById(selected.getId());
+            Call<String> call = api.deleteTaskById(selected.getId().hashCode());
             Response<String> response = null;
             try {
                 response = call.execute();

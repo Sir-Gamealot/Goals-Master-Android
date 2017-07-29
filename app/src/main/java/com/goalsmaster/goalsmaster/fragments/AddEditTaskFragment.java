@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -25,7 +26,12 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.goalsmaster.goalsmaster.data.Goals;
+import com.goalsmaster.goalsmaster.data.Tasks;
 import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Id;
@@ -77,7 +83,7 @@ public class AddEditTaskFragment extends BaseFragment {
     public static final String TAG = AddEditTaskFragment.class.getSimpleName();
 
     private Boolean isEditable;
-    private long itemId;
+    private String itemId;
 
     @BindView(R.id.etTitle)
     public EditText etTitle;
@@ -91,13 +97,13 @@ public class AddEditTaskFragment extends BaseFragment {
     @BindView(R.id.btnAction)
     public Button btnAction;
 
-    @BindView(R.id.mapView)
-    public ImageView mapView;
+    @BindView(R.id.ivPhoto)
+    public ImageView photoView;
 
     @BindView(R.id.addEditMain)
     public ConstraintLayout layout;
 
-    private long userId;
+    private String userId;
     private String title;
     private String description;
     private Date date;
@@ -139,7 +145,7 @@ public class AddEditTaskFragment extends BaseFragment {
         datePickerDialog.show();
     }
 
-    @OnClick(R.id.mapView)
+    @OnClick(R.id.ivPhoto)
     public void onMapViewClick(View sender) {
         EventBus.getDefault().post(new ToastMessage("Not implemented yet!"));
     }
@@ -150,85 +156,47 @@ public class AddEditTaskFragment extends BaseFragment {
             // Insert
             if (dataValidated()) {
                 // Create new task
-                TaskApi api = RestApi.getTaskApi(getContext());
-                Call<Id> call = api.createTask(
-                        getUserId(),
-                        getTitle(),
-                        getDescription(),
-                        getDate(),
-                        getDuration(),
-                        getLatitude(),
-                        getLongitude()
-                );
-                try {
-                    call.enqueue(new Callback<Id>() {
-                        @Override
-                        public void onResponse(Call<Id> call, Response<Id> response) {
-                            if(response.code() == 201) {
-                                Id id = response.body();
-                                saveMapToCache(id.getId());
-                                String msg = id.toString();
-                                EventBus.getDefault().post(new ToastMessage(response.message() + " : \n" + msg));
+                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(getContext());
+                DatabaseReference taskRef = tasksRef.push();
+                final Task task = new Task(taskRef.getKey(), userId, getTitle(), getDescription(), getDate().getTime(), getDuration(), getLatitude(), getLongitude());
+                taskRef.setValue(task)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                EventBus.getDefault().post(new ToastMessage("Task inserted : \n" + task.toString()));
                                 EventBus.getDefault().post(new CancelEvent());
                                 EventBus.getDefault().post(new ServerDataUpdatedEvent());
-                            } else {
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
                                 EventBus.getDefault().post(new ToastMessage("Error: could not insert task."));
                             }
-                        }
-
-                        @Override
-                        public void onFailure(Call<Id> call, Throwable t) {
-                            EventBus.getDefault().post(new ToastMessage(t.getMessage()));
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                        });
             }
         } else {
             // Update
             if (dataValidated()) {
-                // Create new task
-                TaskApi api = RestApi.getTaskApi(getContext());
-                Date date = getDate();
-                date.setHours(1);
-                date.setMinutes(1);
-                date.setSeconds(1);
-                Call<String> call = api.updateTask(
-                                            getItemId(),
-                                            getUserId(),
-                                            getTitle(),
-                                            getDescription(),
-                                            date,
-                                            getDuration(),
-                                            getLatitude(),
-                                            getLongitude()
-                                    );
-                try {
-                    call.enqueue(new Callback<String>() {
-                        @Override
-                        public void onResponse(Call<String> call, Response<String> response) {
-                            if(response.code() == 200) {
-                                saveMapToCache(getItemId());
-                                String msg = String.valueOf(response.body());
-                                EventBus.getDefault().post(new ToastMessage(response.message() + " : \n" + msg));
+                // Edit existing task
+                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(getContext());
+                DatabaseReference taskRef = tasksRef.child(getItemId());
+                final Task task = new Task(getItemId(), getUserId(), getTitle(), getDescription(), getDate().getTime(), getDuration(), getLatitude(), getLongitude());
+                taskRef.setValue(task)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                EventBus.getDefault().post(new ToastMessage("Task edited : \n" + task.toString()));
                                 EventBus.getDefault().post(new CancelEvent());
                                 EventBus.getDefault().post(new ServerDataUpdatedEvent());
-                            } else {
-                                EventBus.getDefault().post(new ToastMessage("Error: could not update task."));
                             }
-                        }
-
-                        @Override
-                        public void onFailure(Call<String> call, Throwable t) {
-                            EventBus.getDefault().post(new ToastMessage(t.getMessage()));
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                EventBus.getDefault().post(new ToastMessage("Error: could not edit task."));
+                            }
+                        });
             }
         }
     }
@@ -439,22 +407,22 @@ public class AddEditTaskFragment extends BaseFragment {
         this.durationInSeconds = duration;
     }
 
-    public long getUserId() {
+    public String getUserId() {
         if(isEditable)
             return userId;
         else
-            return 0;
+            return "null";
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public void setItemId(long id) {
+    public void setItemId(String id) {
         this.itemId = id;
     }
 
-    public long getItemId() {
+    public String getItemId() {
         return itemId;
     }
 
@@ -481,13 +449,13 @@ public class AddEditTaskFragment extends BaseFragment {
         setUserId(task.getUserId());
         setTitle(task.getTitle());
         setDescription(task.getDescription());
-        setDate(task.getDate());
+        setDate(new Date(task.getTimestamp()));
         setDuration(task.getDuration());
         setLatitude(task.getLatitude());
         setLongitude(task.getLongitude());
         String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + getItemId() + ".jpg";
         Picasso.with(getContext()).setIndicatorsEnabled(true);
-        Picasso.with(getContext()).load(path).error(R.drawable.ic_location_add).into(mapView);
+        Picasso.with(getContext()).load(path).error(R.drawable.ic_location_add).into(photoView);
         EventBus.getDefault().removeStickyEvent(event);
     }
 
@@ -495,11 +463,11 @@ public class AddEditTaskFragment extends BaseFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQ_CODE_MAP_LOCATION && resultCode == RESULT_OK) {
+        /*if(requestCode == REQ_CODE_MAP_LOCATION && resultCode == RESULT_OK) {
             if(data == null) {
                 Toast.makeText(getContext(), "Data is null", Toast.LENGTH_SHORT).show();
             } else {
-                /*byte[] byteArray = data.getByteArrayExtra("snapshot");
+                byte[] byteArray = data.getByteArrayExtra("snapshot");
                 String path = getContext().getCacheDir().getAbsolutePath() + File.separator + "cache.png";
                 File f = null;
                 BufferedOutputStream bos = null;
@@ -522,13 +490,13 @@ public class AddEditTaskFragment extends BaseFragment {
                     }
                 }
                 Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                if(bmp != null) photoView.setImageBitmap(bmp);*/
+                if(bmp != null) photoView.setImageBitmap(bmp);
                 latitude = (double) data.getDoubleExtra("latitude", 0);
                 longitude = (double) data.getDoubleExtra("longitude", 0);
                 Picasso.with(getContext()).setIndicatorsEnabled(true);
                 String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + "cache.jpg";
                 Picasso.with(getContext()).load(path).error(R.drawable.ic_map).into(mapView);
             }
-        }
+        }*/
     }
 }

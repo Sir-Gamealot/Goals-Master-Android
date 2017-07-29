@@ -39,8 +39,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-//import com.goalsmaster.goalsmaster.activities.LoginActivity;
-
 /**
  * Created by tudor on 5/8/2017.
  */
@@ -163,66 +161,6 @@ public class GoalViewAdapter extends BaseAdapter {
                 }
         });
     }
-
-    /*public void queryData() {
-        GoalApi api = RestApi.getGoalApi(context);
-        long id;
-        // if(LoginActivity.isLoggedUserSuper())
-        //  id = 0;
-        // else
-        //  id = LoginActivity.getLoggedInUserId();
-        Call<List<Goal>> call = api.findGoalByDateRange(0, filterDateFrom, filterDateTo);
-        call.enqueue(new Callback<List<Goal>>() {
-            @Override
-            public void onResponse(Call<List<Goal>> call, Response<List<Goal>> response) {
-                if(response.body() != null) {
-                    data.clear();
-                    data.addAll(response.body());
-                    //setCountedHoursPerDay(data);
-                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
-                    for (int i = 0; i < data.size(); i++) {
-                        GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
-                        Goal goal = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
-                        if(val >= 0) {
-                            visualState.onoff = true;
-                        }
-                        dataState.put(goal, visualState);
-                    }
-                    notifyItemRangeChanged(0, data.size());
-                } else {
-                    data.clear();
-                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
-                    notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Goal>> call, Throwable t) {
-                Log.e(TAG, t.getMessage());
-                data.clear();
-                dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
-                notifyDataSetChanged();
-            }
-        });
-    }*/
-
-    /*private void setCountedHoursPerDay(List<Goal> data) {
-        if(data.size() == 0)
-            return;
-
-        HashMap<Date, Long> map = new HashMap<>();
-        for(Goal t: data) {
-            long duration = 0;
-            if(map.keySet().contains(t.getDate()))
-                duration = map.get(t.getDate());
-            map.put(t.getDate(), t.getDuration() + duration);
-        }
-
-        for(Goal t: data) {
-            t.setHoursPerDay(map.get(t.getDate()));
-        }
-    }*/
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

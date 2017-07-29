@@ -449,7 +449,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onPostResume() {
         super.onPostResume();
         FragmentManager fm = getSupportFragmentManager();
-        if (fm.getFragments() == null) {
+        if (fm.getFragments() == null || fm.getFragments().size() == 0) {
             if(UserHelper.isLoggedUserAdmin(getApplicationContext()))
                 on(new SwitchToEvent(FragmentTypes.Users));
             else

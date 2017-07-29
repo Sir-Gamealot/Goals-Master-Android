@@ -62,15 +62,11 @@ public class TaskViewHolder extends BaseViewHolder {
         this.task = (Task) item;
         this.state = (VisualState) state;
         //holder.id.setText(String.valueOf(holder.task.getId()));
-        id.setText(sdf.format(task.getDate()));
+        id.setText(sdf.format(task.getTimestamp()));
 
         title.setText((task.getTitle() != null ? task.getTitle() : "Unknown title"));
         description.setText((task.getDescription() != null ? task.getDescription() : "Unknown description"));
-        if(task.hasLocation()) {
-            location.setImageResource(R.drawable.ic_location);
-        } else {
-            location.setImageResource(R.drawable.ic_location_add);
-        }
+        location.setImageResource(R.drawable.ic_location);
         if(((VisualState) state).switchShown == true) {
             if(onoff.getVisibility() != View.VISIBLE)
                 onoff.setVisibility(View.VISIBLE);
