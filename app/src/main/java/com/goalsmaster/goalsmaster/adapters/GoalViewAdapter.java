@@ -21,6 +21,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -131,16 +132,8 @@ public class GoalViewAdapter extends BaseAdapter {
                     // dataSnapshot is the "Goals" node
                     data.clear();
                     for (DataSnapshot issue : dataSnapshot.getChildren()) {
-                        // do something with the individual "issues"
-                        Goal goal = new Goal(
-                                (String)issue.child("id").getValue(),
-                                (String)issue.child("userId").getValue(),
-                                (String)issue.child("title").getValue(),
-                                (String)issue.child("description").getValue(),
-                                new Date((long)issue.child("date").child("time").getValue()),
-                                (String)issue.child("priority").getValue(),
-                                (String)issue.child("photoId").getValue()
-                                );
+                        GenericTypeIndicator<Goal> t = new GenericTypeIndicator<Goal>() {};
+                        Goal goal = issue.getValue(t);
                         data.add(goal);
                     }
                     dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
