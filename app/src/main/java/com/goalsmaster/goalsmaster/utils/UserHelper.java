@@ -2,13 +2,19 @@ package com.goalsmaster.goalsmaster.utils;
 
 import android.content.Context;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 /**
  * Created by tudor on 7/27/2017.
  */
 
 public class UserHelper {
     public static String getLoggedInUsername(Context context) {
-        return "Not Logged In";
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if(auth.getCurrentUser() == null)
+            return "Not Logged In";
+        return
+                auth.getCurrentUser().getDisplayName();
     }
 
     public static String getLoggedInRoleName() {
