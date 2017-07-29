@@ -23,6 +23,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.events.AllowedActionsChanged;
+import com.goalsmaster.goalsmaster.events.LogOffRequest;
 import com.goalsmaster.goalsmaster.events.SwitchToEvent;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
 import com.goalsmaster.goalsmaster.fragments.AddEditGoalFragment;
@@ -31,11 +32,8 @@ import com.goalsmaster.goalsmaster.fragments.BaseFragment;
 import com.goalsmaster.goalsmaster.fragments.GoalFragment;
 import com.goalsmaster.goalsmaster.fragments.TaskFragment;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
-import com.goalsmaster.goalsmaster.other.Globals;
-import com.goalsmaster.goalsmaster.utils.AppConfig;
 import com.goalsmaster.goalsmaster.utils.SecurityUtils;
 import com.goalsmaster.goalsmaster.utils.UserHelper;
-import com.goalsmaster.goalsmaster.data.Role;
 import com.goalsmaster.goalsmaster.events.CancelEvent;
 import com.goalsmaster.goalsmaster.events.DeleteSelectedEvent;
 import com.goalsmaster.goalsmaster.events.EditEvent;
@@ -43,10 +41,6 @@ import com.goalsmaster.goalsmaster.events.InsertEvent;
 import com.goalsmaster.goalsmaster.events.SelectAllEvent;
 import com.goalsmaster.goalsmaster.events.ToolbarTitleChange;
 import com.goalsmaster.goalsmaster.other.FabMenu;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
@@ -332,11 +326,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 }
                 break;
             case R.id.nav_log_off:
-                //EventBus.getDefault().post(new LogOffRequest());
+                EventBus.getDefault().post(new LogOffRequest(false));
                 //EventBus.getDefault().post(new ToastMessage("User is not logged in", ToastMessage.Type.ALERT));
-                firebaseAuth.signOut();
-                AppConfig.putBoolean(getApplicationContext(), Globals.S_SMART_LOCK_STATE, false);
-                recreate();
                 break;
             /*case R.id.nav_settings:
                 startSettingsActivity();
@@ -458,7 +449,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     protected void onPostResume() {
         super.onPostResume();
         FragmentManager fm = getSupportFragmentManager();
-        if (fm.getFragments() == null) {
+        if (fm.getFragments() == null || fm.getFragments().size() == 0) {
             if(UserHelper.isLoggedUserAdmin(getApplicationContext()))
                 on(new SwitchToEvent(FragmentTypes.Users));
             else

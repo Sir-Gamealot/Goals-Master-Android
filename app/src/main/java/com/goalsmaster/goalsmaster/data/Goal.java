@@ -1,7 +1,6 @@
 package com.goalsmaster.goalsmaster.data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -15,10 +14,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class Goal implements Serializable, Parcelable {
 
+    private static final String TAG = Goal.class.getSimpleName();
+
     @SerializedName("id")
     @Expose
     private String id;
-    @SerializedName("user_id")
+    @SerializedName("userId")
     @Expose
     private String userId;
     @SerializedName("title")
@@ -27,18 +28,20 @@ public class Goal implements Serializable, Parcelable {
     @SerializedName("description")
     @Expose
     private String description;
-    @SerializedName("date")
+    @SerializedName("timestamp")
     @Expose
-    private Date date;
+    private long timestamp;
     @SerializedName("priority")
     @Expose
     private String priority;
     @SerializedName("photoId")
     @Expose
     private String photoId;
-    public final static Parcelable.Creator<Goal> CREATOR = new Creator<Goal>() {
 
 
+    private final static long serialVersionUID = 1936016512126908651L;
+
+public final static Parcelable.Creator<Goal> CREATOR = new Creator<Goal>() {
         @SuppressWarnings({
                 "unchecked"
         })
@@ -48,7 +51,7 @@ public class Goal implements Serializable, Parcelable {
             instance.userId = ((String) in.readValue((String.class.getClassLoader())));
             instance.title = ((String) in.readValue((String.class.getClassLoader())));
             instance.description = ((String) in.readValue((String.class.getClassLoader())));
-            instance.date = ((Date) in.readValue((Date.class.getClassLoader())));
+            instance.timestamp = ((long) in.readValue((long.class.getClassLoader())));
             instance.priority = ((String) in.readValue((String.class.getClassLoader())));
             instance.photoId = ((String) in.readValue((String.class.getClassLoader())));
             return instance;
@@ -59,7 +62,6 @@ public class Goal implements Serializable, Parcelable {
         }
 
     };
-    private final static long serialVersionUID = 1936016512126908651L;
 
     /**
      * No args constructor for use in serialization
@@ -73,16 +75,16 @@ public class Goal implements Serializable, Parcelable {
      * @param priority
      * @param description
      * @param userId
-     * @param date
+     * @param timestamp
      * @param photoId
      */
-    public Goal(String id, String userId, String title, String description, Date date, String priority, String photoId) {
+    public Goal(String id, String userId, String title, String description, long timestamp, String priority, String photoId) {
         super();
         this.id = id;
         this.userId = userId;
         this.title = title;
         this.description = description;
-        this.date = date;
+        this.timestamp = timestamp;
         this.priority = priority;
         this.photoId = photoId;
     }
@@ -95,22 +97,12 @@ public class Goal implements Serializable, Parcelable {
         this.id = id;
     }
 
-    public Goal withId(String id) {
-        this.id = id;
-        return this;
-    }
-
     public String getUserId() {
         return userId;
     }
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public Goal withUserId(String userId) {
-        this.userId = userId;
-        return this;
     }
 
     public String getTitle() {
@@ -121,11 +113,6 @@ public class Goal implements Serializable, Parcelable {
         this.title = title;
     }
 
-    public Goal withTitle(String title) {
-        this.title = title;
-        return this;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -134,22 +121,12 @@ public class Goal implements Serializable, Parcelable {
         this.description = description;
     }
 
-    public Goal withDescription(String description) {
-        this.description = description;
-        return this;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Goal withDate(Date date) {
-        this.date = date;
-        return this;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getPriority() {
@@ -160,22 +137,12 @@ public class Goal implements Serializable, Parcelable {
         this.priority = priority;
     }
 
-    public Goal withPriority(String priority) {
-        this.priority = priority;
-        return this;
-    }
-
     public String getPhotoId() {
         return photoId;
     }
 
     public void setPhotoId(String photoId) {
         this.photoId = photoId;
-    }
-
-    public Goal withPhoto(String photo) {
-        this.photoId = photo;
-        return this;
     }
 
     @Override
@@ -187,12 +154,12 @@ public class Goal implements Serializable, Parcelable {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(id)
-                .append(userId)
-                .append(title)
-                .append(description)
-                .append(date)
-                .append(priority)
-                .append(photoId)
+                //.append(userId)
+                //.append(title)
+                //.append(description)
+                //.append(timestamp)
+                //.append(priority)
+                //.append(photoId)
                 .toHashCode();
     }
 
@@ -210,20 +177,20 @@ public class Goal implements Serializable, Parcelable {
                 .append(userId, rhs.userId)
                 .append(title, rhs.title)
                 .append(description, rhs.description)
-                .append(date, rhs.date)
+                .append(timestamp, rhs.timestamp)
                 .append(priority, rhs.priority)
                 .append(photoId, rhs.photoId)
                 .isEquals();
     }
 
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(id);
-        dest.writeValue(userId);
-        dest.writeValue(title);
-        dest.writeValue(description);
-        dest.writeValue(date);
-        dest.writeValue(priority);
-        dest.writeValue(photoId);
+        dest.writeString(id);
+        dest.writeString(userId);
+        dest.writeString(title);
+        dest.writeString(description);
+        dest.writeLong(timestamp);
+        dest.writeString(priority);
+        dest.writeString(photoId);
     }
 
     public int describeContents() {

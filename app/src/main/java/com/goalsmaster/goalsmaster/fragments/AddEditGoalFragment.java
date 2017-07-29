@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Goal;
+import com.goalsmaster.goalsmaster.data.Goals;
 import com.goalsmaster.goalsmaster.events.CancelEvent;
 import com.goalsmaster.goalsmaster.events.GoalItem;
 import com.goalsmaster.goalsmaster.events.ServerDataUpdatedEvent;
@@ -140,13 +141,9 @@ public class AddEditGoalFragment extends BaseFragment {
             // Insert
             if (dataValidated()) {
                 // Create new goal
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userId = (user != null ? user.getUid() : "error_null_user");
-                DatabaseReference goalsRef = database.getReference("Goals");
+                DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
                 DatabaseReference goalRef = goalsRef.push();
-                final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate(), getPriority(), getPhotoId());
+                final Goal goal = new Goal(goalRef.getKey(), userId, getTitle(), getDescription(), getDate().getTime(), getPriority(), getPhotoId());
                 goalRef.setValue(goal)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -162,90 +159,29 @@ public class AddEditGoalFragment extends BaseFragment {
                                 EventBus.getDefault().post(new ToastMessage("Error: could not insert goal."));
                             }
                         });
-                /*GoalApi api = RestApi.getGoalApi(getContext());
-                Call<Id> call = api.createGoal(
-                        getUserId(),
-                        getTitle(),
-                        getDescription(),
-                        getDate(),
-                        getPriority(),
-                        getPhotoId()
-                );
-                try {
-                    call.enqueue(new Callback<Id>() {
-                        @Override
-                        public void onResponse(Call<Id> call, Response<Id> response) {
-                            if (response.code() == 201) {
-                                Id id = response.body();
-                                saveMapToCache(id.getId());
-                                String msg = id.toString();
-                                EventBus.getDefault().post(new ToastMessage(response.message() + " : \n" + msg));
-                                EventBus.getDefault().post(new CancelEvent());
-                                EventBus.getDefault().post(new ServerDataUpdatedEvent());
-                            } else {
-                                EventBus.getDefault().post(new ToastMessage("Error: could not insert goal."));
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<Id> call, Throwable t) {
-                            EventBus.getDefault().post(new ToastMessage(t.getMessage()));
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
             }
         } else {
             // Update
             if (dataValidated()) {
-                // Create new goal
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userId = (user != null ? user.getUid() : "error_null_user");
-                DatabaseReference goalsRef = database.getReference("Goals");
-                DatabaseReference goalRef = goalsRef.push();
-                goalRef.setValue(new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate(), getPriority(), getPhotoId()));
-                /*GoalApi api = RestApi.getGoalApi(getContext());
-                Date date = getDate();
-                date.setHours(1);
-                date.setMinutes(1);
-                date.setSeconds(1);
-                Call<String> call = api.updateGoal(
-                        getItemId(),
-                        getUserId(),
-                        getTitle(),
-                        getDescription(),
-                        date,
-                        getPriority(),
-                        getPhotoId()
-                );
-                try {
-                    call.enqueue(new Callback<String>() {
-                        @Override
-                        public void onResponse(Call<String> call, Response<String> response) {
-                            if (response.code() == 200) {
-                                saveMapToCache(getItemId());
-                                String msg = String.valueOf(response.body());
-                                EventBus.getDefault().post(new ToastMessage(response.message() + " : \n" + msg));
+                // Edit existing goal
+                DatabaseReference goalsRef = Goals.getFirebaseNodeRef(getContext());
+                DatabaseReference goalRef = goalsRef.child(getItemId());
+                final Goal goal = new Goal(getItemId(), getUserId(), getTitle(), getDescription(), getDate().getTime(), getPriority(), getPhotoId());
+                goalRef.setValue(goal)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                EventBus.getDefault().post(new ToastMessage("Goal edited : \n" + goal.toString()));
                                 EventBus.getDefault().post(new CancelEvent());
                                 EventBus.getDefault().post(new ServerDataUpdatedEvent());
-                            } else {
-                                EventBus.getDefault().post(new ToastMessage("Error: could not update goal."));
                             }
-                        }
-
-                        @Override
-                        public void onFailure(Call<String> call, Throwable t) {
-                            EventBus.getDefault().post(new ToastMessage(t.getMessage()));
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                EventBus.getDefault().post(new ToastMessage("Error: could not edit goal."));
+                            }
+                        });
             }
         }
     }
@@ -479,7 +415,7 @@ public class AddEditGoalFragment extends BaseFragment {
         setUserId(goal.getUserId());
         setTitle(goal.getTitle());
         setDescription(goal.getDescription());
-        setDate(goal.getDate());
+        setDate(new Date(goal.getTimestamp()));
         setPriority(goal.getPriority());
         setPhotoId(goal.getPhotoId());
         String path = "file:///" + getContext().getCacheDir().getAbsolutePath() + File.separator + getItemId() + ".jpg";

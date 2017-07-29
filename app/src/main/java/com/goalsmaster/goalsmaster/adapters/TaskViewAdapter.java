@@ -3,24 +3,36 @@ package com.goalsmaster.goalsmaster.adapters;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.goalsmaster.goalsmaster.R;
-//import com.goalsmaster.goalsmaster.activities.LoginActivity;
+import com.goalsmaster.goalsmaster.activities.BaseActivity;
 import com.goalsmaster.goalsmaster.data.Task;
+import com.goalsmaster.goalsmaster.data.Tasks;
 import com.goalsmaster.goalsmaster.holders.TaskViewHolder;
+import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.rest.RestApi;
 import com.goalsmaster.goalsmaster.rest.TaskApi;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -96,7 +108,7 @@ public class TaskViewAdapter extends BaseAdapter {
         ArrayList<Integer> selectionList = new ArrayList<>();
         List<Task> list = getSelected();
         for(Task t: list)
-            selectionList.add((int) t.getId());
+            selectionList.add(t.getId().hashCode());
         outState.putIntegerArrayList(KEY_SELECTIONS, selectionList);
     }
 
@@ -112,64 +124,42 @@ public class TaskViewAdapter extends BaseAdapter {
 
 
     public void queryData() {
-        TaskApi api = RestApi.getTaskApi(context);
-        long id;
-        /*if(LoginActivity.isLoggedUserSuper())
-            id = 0;
-        else
-            id = LoginActivity.getLoggedInUserId();*/
-        Call<List<Task>> call = api.findTaskByDateRange(0, filterDateFrom, filterDateTo);
-        call.enqueue(new Callback<List<Task>>() {
-            @Override
-            public void onResponse(Call<List<Task>> call, Response<List<Task>> response) {
-                if(response.body() != null) {
-                    data.clear();
-                    data.addAll(response.body());
-                    //setCountedHoursPerDay(data);
-                    dataState = new HashMap<Task, TaskViewHolder.VisualState>(data.size());
-                    for (int i = 0; i < data.size(); i++) {
-                        TaskViewHolder.VisualState visualState = new TaskViewHolder.VisualState();
-                        Task task = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)task.getId());
-                        if(val >= 0) {
-                            visualState.onoff = true;
+        DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(context);
+        tasksRef.orderByChild("timestamp")
+                .startAt(filterDateFrom.getTime())
+                .endAt(filterDateTo.getTime())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot tasksSnapshot) {
+                    if (tasksSnapshot.exists()) {
+                        data.clear();
+                        for (DataSnapshot issue : tasksSnapshot.getChildren()) {
+                            GenericTypeIndicator<Task> t = new GenericTypeIndicator<Task>() {};
+                            Task task = issue.getValue(t);
+                            data.add(task);
                         }
-                        dataState.put(task, visualState);
+                        dataState = new HashMap<Task, TaskViewHolder.VisualState>(data.size());
+                        for (int i = 0; i < data.size(); i++) {
+                            TaskViewHolder.VisualState visualState = new TaskViewHolder.VisualState();
+                            Task task = data.get(i);
+                            int val = Arrays.binarySearch(oldSelections, (int)task.getId().hashCode());
+                            if(val >= 0) {
+                                visualState.onoff = true;
+                            }
+                            dataState.put(task, visualState);
+                        }
+                        notifyItemRangeChanged(0, data.size());
                     }
-                    notifyItemRangeChanged(0, data.size());
-                } else {
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
                     data.clear();
                     dataState = new HashMap<Task, TaskViewHolder.VisualState>(0);
                     notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<List<Task>> call, Throwable t) {
-                Log.e(TAG, t.getMessage());
-                data.clear();
-                dataState = new HashMap<Task, TaskViewHolder.VisualState>(0);
-                notifyDataSetChanged();
-            }
         });
     }
-
-    /*private void setCountedHoursPerDay(List<Task> data) {
-        if(data.size() == 0)
-            return;
-
-        HashMap<Date, Long> map = new HashMap<>();
-        for(Task t: data) {
-            long duration = 0;
-            if(map.keySet().contains(t.getDate()))
-                duration = map.get(t.getDate());
-            map.put(t.getDate(), t.getDuration() + duration);
-        }
-
-        for(Task t: data) {
-            t.setHoursPerDay(map.get(t.getDate()));
-        }
-    }*/
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

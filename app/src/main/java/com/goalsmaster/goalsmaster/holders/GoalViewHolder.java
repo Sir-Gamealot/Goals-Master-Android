@@ -62,7 +62,7 @@ public class GoalViewHolder extends BaseViewHolder {
         this.goal = (Goal) item;
         this.state = (VisualState) state;
         //holder.id.setText(String.valueOf(holder.goal.getId()));
-        id.setText(sdf.format(goal.getDate()));
+        id.setText(sdf.format(goal.getTimestamp()));
 
         title.setText((goal.getTitle() != null ? goal.getTitle() : "Unknown title"));
         description.setText((goal.getDescription() != null ? goal.getDescription() : "Unknown description"));

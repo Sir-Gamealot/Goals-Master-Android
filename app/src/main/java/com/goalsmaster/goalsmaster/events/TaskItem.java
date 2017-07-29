@@ -9,7 +9,7 @@ import com.goalsmaster.goalsmaster.data.Task;
 public class TaskItem {
     private Task task;
     public TaskItem(Task task) {
-        this.task = new Task(task.getId(), task.getUserId(), task.getTitle(), task.getDescription(), task.getDate(), task.getDuration(), task.getLatitude(), task.getLongitude());
+        this.task = new Task(task.getId(), task.getUserId(), task.getTitle(), task.getDescription(), task.getTimestamp(), task.getDuration(), task.getLatitude(), task.getLongitude());
     }
 
     /**

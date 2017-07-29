@@ -1,5 +1,6 @@
 package com.goalsmaster.goalsmaster.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -13,6 +14,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ResultCodes;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.data.Goal;
+import com.goalsmaster.goalsmaster.events.LogOffRequest;
 import com.goalsmaster.goalsmaster.other.Globals;
 import com.goalsmaster.goalsmaster.other.RequestCodes;
 import com.goalsmaster.goalsmaster.utils.AppConfig;
@@ -20,6 +22,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -111,5 +115,16 @@ public class BaseActivity extends AppCompatActivity {
                 Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    protected void signOffWithSmartLock(boolean smartLockEnabled) {
+        firebaseAuth.signOut();
+        AppConfig.putBoolean(getApplicationContext(), Globals.S_SMART_LOCK_STATE, smartLockEnabled);
+        recreate();
+    }
+
+    @Subscribe
+    public void on(LogOffRequest event) {
+        signOffWithSmartLock(event.smartLockState);
     }
 }

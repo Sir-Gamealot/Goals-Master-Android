@@ -11,16 +11,21 @@ import android.view.ViewGroup;
 import com.goalsmaster.goalsmaster.R;
 import com.goalsmaster.goalsmaster.activities.BaseActivity;
 import com.goalsmaster.goalsmaster.data.Goal;
+import com.goalsmaster.goalsmaster.data.Goals;
 import com.goalsmaster.goalsmaster.data.Task;
 import com.goalsmaster.goalsmaster.holders.GoalViewHolder;
 import com.goalsmaster.goalsmaster.holders.TaskViewHolder;
 import com.goalsmaster.goalsmaster.rest.GoalApi;
 import com.goalsmaster.goalsmaster.rest.RestApi;
 import com.goalsmaster.goalsmaster.rest.TaskApi;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -33,8 +38,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-//import com.goalsmaster.goalsmaster.activities.LoginActivity;
 
 /**
  * Created by tudor on 5/8/2017.
@@ -122,109 +125,42 @@ public class GoalViewAdapter extends BaseAdapter {
     }
 
     public void queryData() {
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference goals = db.getReference().child("Goals");
-        goals.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // dataSnapshot is the "Goals" node
-                    data.clear();
-                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
-                        // do something with the individual "issues"
-                        Goal goal = new Goal(
-                                (String)issue.child("id").getValue(),
-                                (String)issue.child("userId").getValue(),
-                                (String)issue.child("title").getValue(),
-                                (String)issue.child("description").getValue(),
-                                new Date((long)issue.child("date").child("time").getValue()),
-                                (String)issue.child("priority").getValue(),
-                                (String)issue.child("photoId").getValue()
-                                );
-                        data.add(goal);
-                    }
-                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
-                    for (int i = 0; i < data.size(); i++) {
-                        GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
-                        Goal goal = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
-                        if(val >= 0) {
-                            visualState.onoff = true;
+        DatabaseReference goalsRef = Goals.getFirebaseNodeRef(context);
+        goalsRef.orderByChild("timestamp")
+                .startAt(filterDateFrom.getTime())
+                .endAt(filterDateTo.getTime())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot goalsSnapshot) {
+                    if (goalsSnapshot.exists()) {
+                        data.clear();
+                        for (DataSnapshot issue : goalsSnapshot.getChildren()) {
+                            GenericTypeIndicator<Goal> t = new GenericTypeIndicator<Goal>() {};
+                            Goal goal = issue.getValue(t);
+                            data.add(goal);
                         }
-                        dataState.put(goal, visualState);
+                        dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
+                        for (int i = 0; i < data.size(); i++) {
+                            GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
+                            Goal goal = data.get(i);
+                            int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
+                            if(val >= 0) {
+                                visualState.onoff = true;
+                            }
+                            dataState.put(goal, visualState);
+                        }
+                        notifyItemRangeChanged(0, data.size());
                     }
-                    notifyItemRangeChanged(0, data.size());
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                data.clear();
-                dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
-                notifyDataSetChanged();
-            }
-        });
-    }
-
-    /*public void queryData() {
-        GoalApi api = RestApi.getGoalApi(context);
-        long id;
-        // if(LoginActivity.isLoggedUserSuper())
-        //  id = 0;
-        // else
-        //  id = LoginActivity.getLoggedInUserId();
-        Call<List<Goal>> call = api.findGoalByDateRange(0, filterDateFrom, filterDateTo);
-        call.enqueue(new Callback<List<Goal>>() {
-            @Override
-            public void onResponse(Call<List<Goal>> call, Response<List<Goal>> response) {
-                if(response.body() != null) {
-                    data.clear();
-                    data.addAll(response.body());
-                    //setCountedHoursPerDay(data);
-                    dataState = new HashMap<Goal, GoalViewHolder.VisualState>(data.size());
-                    for (int i = 0; i < data.size(); i++) {
-                        GoalViewHolder.VisualState visualState = new GoalViewHolder.VisualState();
-                        Goal goal = data.get(i);
-                        int val = Arrays.binarySearch(oldSelections, (int)goal.getId().hashCode());
-                        if(val >= 0) {
-                            visualState.onoff = true;
-                        }
-                        dataState.put(goal, visualState);
-                    }
-                    notifyItemRangeChanged(0, data.size());
-                } else {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
                     data.clear();
                     dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
                     notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<List<Goal>> call, Throwable t) {
-                Log.e(TAG, t.getMessage());
-                data.clear();
-                dataState = new HashMap<Goal, GoalViewHolder.VisualState>(0);
-                notifyDataSetChanged();
-            }
         });
-    }*/
-
-    /*private void setCountedHoursPerDay(List<Goal> data) {
-        if(data.size() == 0)
-            return;
-
-        HashMap<Date, Long> map = new HashMap<>();
-        for(Goal t: data) {
-            long duration = 0;
-            if(map.keySet().contains(t.getDate()))
-                duration = map.get(t.getDate());
-            map.put(t.getDate(), t.getDuration() + duration);
-        }
-
-        for(Goal t: data) {
-            t.setHoursPerDay(map.get(t.getDate()));
-        }
-    }*/
+    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
