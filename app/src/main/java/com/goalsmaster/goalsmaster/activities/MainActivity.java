@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.goalsmaster.goalsmaster.R;
+import com.goalsmaster.goalsmaster.data.Goal;
 import com.goalsmaster.goalsmaster.events.AllowedActionsChanged;
 import com.goalsmaster.goalsmaster.events.SwitchToEvent;
 import com.goalsmaster.goalsmaster.events.ToastMessage;
@@ -30,6 +31,8 @@ import com.goalsmaster.goalsmaster.fragments.BaseFragment;
 import com.goalsmaster.goalsmaster.fragments.GoalFragment;
 import com.goalsmaster.goalsmaster.fragments.TaskFragment;
 import com.goalsmaster.goalsmaster.other.FragmentTypes;
+import com.goalsmaster.goalsmaster.other.Globals;
+import com.goalsmaster.goalsmaster.utils.AppConfig;
 import com.goalsmaster.goalsmaster.utils.SecurityUtils;
 import com.goalsmaster.goalsmaster.utils.UserHelper;
 import com.goalsmaster.goalsmaster.data.Role;
@@ -40,6 +43,10 @@ import com.goalsmaster.goalsmaster.events.InsertEvent;
 import com.goalsmaster.goalsmaster.events.SelectAllEvent;
 import com.goalsmaster.goalsmaster.events.ToolbarTitleChange;
 import com.goalsmaster.goalsmaster.other.FabMenu;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
@@ -48,6 +55,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -253,6 +261,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else {*/
             nav_Menu.findItem(R.id.nav_task).setChecked(true);
         /*}*/
+
+        // Write a message to the database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        String userId = (user != null ? user.getUid() : "default");
+        DatabaseReference rootRef = database.getReference(userId);
+        DatabaseReference goalRef = rootRef.child("Goals").push();
+        goalRef.setValue(new Goal(1, 666, "Title 2", "Description 2", new Date(), "Absolutely", "ABCD"));
     }
 
     @Override
@@ -325,7 +342,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 break;
             case R.id.nav_log_off:
                 //EventBus.getDefault().post(new LogOffRequest());
-                EventBus.getDefault().post(new ToastMessage("User is not logged in", ToastMessage.Type.ALERT));
+                //EventBus.getDefault().post(new ToastMessage("User is not logged in", ToastMessage.Type.ALERT));
+                firebaseAuth.signOut();
+                AppConfig.putBoolean(getApplicationContext(), Globals.S_SMART_LOCK_STATE, false);
+                recreate();
                 break;
             /*case R.id.nav_settings:
                 startSettingsActivity();

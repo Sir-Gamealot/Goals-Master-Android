@@ -23,3 +23,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Firebase
+-keepattributes Signature
+-keepclassmembers class com.goalsmaster.goalsmaster.data.** {
+  *;
+}
+-keepattributes Signature
+-keepattributes *Annotation*

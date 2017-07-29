@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1042708440408",
+    "firebase_url": "https://goalsmaster-e6340.firebaseio.com",
+    "project_id": "goalsmaster-e6340",
+    "storage_bucket": "goalsmaster-e6340.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042708440408:android:f5c12d3849faea06",
+        "android_client_info": {
+          "package_name": "com.goalsmaster.goalsmaster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1042708440408-lnom8shgni0db1g8cl0c0n8lqrerqikl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.goalsmaster.goalsmaster",
+            "certificate_hash": "f75dc0ad88a28828ce96505cbe5f76f25576a24e"
+          }
+        },
+        {
+          "client_id": "1042708440408-6hqrdh1snmgvda01e6a7vmpbqtcgkefp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcQrh83GsX6GdPfmVIVshF9onN_dZy3Go"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1042708440408-6hqrdh1snmgvda01e6a7vmpbqtcgkefp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
