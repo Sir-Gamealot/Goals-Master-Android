@@ -25,10 +25,10 @@ public class WrapContentLinearLayoutManager extends LinearLayoutManager {
     //... constructor
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        try {
+        //try {
             super.onLayoutChildren(recycler, state);
-        } catch (Exception e) {
-            Log.e("probe", "meet a IOOBE in RecyclerView");
-        }
+        //} catch (Exception e) {
+            //Log.e("probe", "meet a IOOBE in RecyclerView");
+        //}
     }
 }

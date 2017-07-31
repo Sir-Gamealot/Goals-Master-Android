@@ -156,7 +156,7 @@ public class AddEditTaskFragment extends BaseFragment {
             // Insert
             if (dataValidated()) {
                 // Create new task
-                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(getContext());
+                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef();
                 DatabaseReference taskRef = tasksRef.push();
                 final Task task = new Task(taskRef.getKey(), userId, getTitle(), getDescription(), getDate().getTime(), getDuration(), getLatitude(), getLongitude());
                 taskRef.setValue(task)
@@ -179,7 +179,7 @@ public class AddEditTaskFragment extends BaseFragment {
             // Update
             if (dataValidated()) {
                 // Edit existing task
-                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(getContext());
+                DatabaseReference tasksRef = Tasks.getFirebaseNodeRef();
                 DatabaseReference taskRef = tasksRef.child(getItemId());
                 final Task task = new Task(getItemId(), getUserId(), getTitle(), getDescription(), getDate().getTime(), getDuration(), getLatitude(), getLongitude());
                 taskRef.setValue(task)
