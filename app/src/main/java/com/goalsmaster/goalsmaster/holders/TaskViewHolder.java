@@ -10,6 +10,7 @@ import com.goalsmaster.goalsmaster.data.Task;
 import com.goalsmaster.goalsmaster.events.SwitchStateChangedEvent;
 import com.goalsmaster.goalsmaster.events.TaskFragmentEvent;
 import com.goalsmaster.goalsmaster.events.TaskFragmentItemLongClick;
+import com.goalsmaster.goalsmaster.holders.visualstate.TaskVisualState;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -26,7 +27,7 @@ import butterknife.OnLongClick;
 
 public class TaskViewHolder extends BaseViewHolder {
     public Task task;
-    public VisualState state;
+    public TaskVisualState state;
 
     @BindView(R.id.row_main)
     public View view;
@@ -43,16 +44,6 @@ public class TaskViewHolder extends BaseViewHolder {
 
     SimpleDateFormat sdf = new SimpleDateFormat("MMM d,\nyyyy");
 
-    public static class VisualState {
-        public boolean onoff;
-        public boolean switchShown;
-
-        public VisualState() {
-            onoff = false;
-            switchShown = false;
-        }
-    }
-
     public TaskViewHolder(View view) {
         super(view);
         ButterKnife.bind(this, view);
@@ -60,21 +51,21 @@ public class TaskViewHolder extends BaseViewHolder {
 
     public void bind(Object item, Object state) {
         this.task = (Task) item;
-        this.state = (VisualState) state;
+        this.state = (TaskVisualState) state;
         //holder.id.setText(String.valueOf(holder.task.getId()));
         id.setText(sdf.format(task.getTimestamp()));
 
         title.setText((task.getTitle() != null ? task.getTitle() : "Unknown title"));
         description.setText((task.getDescription() != null ? task.getDescription() : "Unknown description"));
         location.setImageResource(R.drawable.ic_location);
-        if(((VisualState) state).switchShown == true) {
+        if(((TaskVisualState) state).switchShown == true) {
             if(onoff.getVisibility() != View.VISIBLE)
                 onoff.setVisibility(View.VISIBLE);
         } else {
             if(onoff.getVisibility() != View.GONE)
                 onoff.setVisibility(View.GONE);
         }
-        onoff.setChecked(((VisualState) state).onoff);
+        onoff.setChecked(((TaskVisualState) state).onoff);
         int bgColor = R.drawable.bg_row_green;
         if (task.getDuration() > 8*3600)
             bgColor = R.drawable.bg_row_red;

@@ -11,8 +11,6 @@ import android.provider.CalendarContract;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,6 +50,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -156,7 +155,7 @@ public class TaskFragment extends BaseFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        adapter.saveInstanceState(outState);
+        //adapter.saveInstanceState(outState);
     }
 
     @Override
@@ -174,10 +173,24 @@ public class TaskFragment extends BaseFragment {
             }
             recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(2));
 
-            adapter = new TaskViewAdapter(getContext());
+            /*adapter = new TaskViewAdapter(getContext());
             if(savedInstanceState != null) {
                 adapter.restoreState(savedInstanceState);
-            }
+            }*/
+
+            //Query query = FirebaseDatabase.getInstance().getReferenceFromUrl("https://goalsmaster-e6340.firebaseio.com/Tasks/Zy90DT3yY5ZBOlx62PjiTIT8Oig2").orderByKey();
+            /*Query query = Tasks.getFirebaseNodeRef(getContext())
+                    .orderByChild("timestamp")
+                    .startAt(Double.MIN_VALUE)
+                    .endAt(Double.MAX_VALUE);
+            adapter = new FirebaseRecyclerAdapter<Task, TaskViewHolder>(Task.class, R.layout.row_task, TaskViewHolder.class, query) {
+                @Override
+                protected void populateViewHolder(TaskViewHolder viewHolder, Task model, int position) {
+                    viewHolder.bind(model, viewHolder.state);
+                }
+            };*/
+
+            adapter = new TaskViewAdapter(getContext(), R.layout.row_task);
             recyclerView.setAdapter(adapter);
         }
         ButterKnife.bind(this, view);
@@ -307,7 +320,7 @@ public class TaskFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void on(DeleteSelectedEvent event) {
 
-        List<Task> selectedArray = adapter.getSelected();
+        /*List<WeakReference> selectedArray = adapter.getSelected();
 
         if(selectedArray.size() == 0) {
             EventBus.getDefault().post(new ToastMessage("No items selected."));
@@ -316,40 +329,17 @@ public class TaskFragment extends BaseFragment {
 
         final List<Integer> positions = new ArrayList<>();
 
-        TaskApi api = RestApi.getTaskApi(getContext());
-        int succeeded = 0, failed = 0;
-        for (Task selected : selectedArray) {
-            Call<String> call = api.deleteTaskById(selected.getId().hashCode());
-            Response<String> response = null;
-            try {
-                response = call.execute();
-                positions.add(adapter.getItemPosition(selected));
-            } catch (Exception e) {
-                e.printStackTrace();
+        //TaskApi api = RestApi.getTaskApi(getContext());
+        //int succeeded = 0, failed = 0;
+        ArrayList<String> list = new ArrayList<>();
+        for (WeakReference ref: selectedArray) {
+            Task selectedObject = (Task) ref.get();
+            if(selectedObject != null) {
+                list.add(selectedObject.getId());
             }
-        }
+        }*/
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (final Integer position : positions) {
-                    adapter.remove(position);
-                }
-                adapter.notifyDataSetChanged();
-            }
-        });
-
-        String msg = "";
-        if (failed == 0) {
-            msg = "All items deleted successfully";
-            EventBus.getDefault().post(new SelectAllEvent(false));
-        } else if (succeeded == 0) {
-            msg = "Could not delete any item(s)";
-        } else {
-            msg = "Deleted " + succeeded + ", failed " + failed;
-        }
-
-        EventBus.getDefault().post(new ToastMessage(msg));
+        adapter.deleteSelected();
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -359,7 +349,7 @@ public class TaskFragment extends BaseFragment {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void on(ServerDataUpdatedEvent event) {
-        adapter.queryData();
+        //adapter.queryData();
         while(null != EventBus.getDefault().removeStickyEvent(ServerDataUpdatedEvent.class));
     }
 
@@ -367,12 +357,12 @@ public class TaskFragment extends BaseFragment {
     public void on(DateFilterChanged event) {
         Date from = StringUtils.dateFromCharSequence(dateFrom.getText());
         Date to = StringUtils.dateFromCharSequence(dateTo.getText());
-        adapter.setDateFilters(from, to);
-        adapter.queryData();
+        //adapter.setDateFilters(from, to);
+        //adapter.queryData();
     }
 
     public List<Task> getTaskList() {
-        return adapter.getList();
+        return new ArrayList<>(); //adapter.getList();
     }
 
     @Override

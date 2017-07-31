@@ -19,10 +19,9 @@ public class Tasks {
     /**
      * Returns a valid reference to the Goal list path for the current user.
      *
-     * @param context
      * @return
      */
-    public static DatabaseReference getFirebaseNodeRef(Context context) {
+    public static DatabaseReference getFirebaseNodeRef() {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
