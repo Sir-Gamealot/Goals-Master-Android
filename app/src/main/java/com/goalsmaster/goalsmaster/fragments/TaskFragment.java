@@ -328,26 +328,6 @@ public class TaskFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void on(DeleteSelectedEvent event) {
-
-        /*List<WeakReference> selectedArray = adapter.getSelected();
-
-        if(selectedArray.size() == 0) {
-            EventBus.getDefault().post(new ToastMessage("No items selected."));
-            return;
-        }
-
-        final List<Integer> positions = new ArrayList<>();
-
-        //TaskApi api = RestApi.getTaskApi(getContext());
-        //int succeeded = 0, failed = 0;
-        ArrayList<String> list = new ArrayList<>();
-        for (WeakReference ref: selectedArray) {
-            Task selectedObject = (Task) ref.get();
-            if(selectedObject != null) {
-                list.add(selectedObject.getId());
-            }
-        }*/
-
         adapter.deleteSelected();
     }
 

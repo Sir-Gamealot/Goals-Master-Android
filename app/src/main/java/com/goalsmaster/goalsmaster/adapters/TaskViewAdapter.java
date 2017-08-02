@@ -14,7 +14,9 @@ import com.google.firebase.database.DatabaseReference;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by tudor on 5/8/2017.
@@ -47,29 +49,34 @@ public class TaskViewAdapter extends BaseFirebaseRecyclerAdapter<Task, TaskViewH
     }
 
     @Override
-    public void deleteObject(Object object) {
-        /*for(int i=0; i<getItemCount(); i++) {
-            // TODO change the object from VisualState fetching method, it is inefficient for tons of rows
-            Task source = (Task)object;
-            Task target = (Task)getItem(i);
-            Log.d(TAG, "Target <> Source" + String.valueOf(target) + " <> " + String.valueOf(source) );
-            if(source.equals(target)) {
-                getRef(i).removeValue(new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                        if(databaseError != null)
-                            EventBus.getDefault().post(new ToastMessage(databaseError.getMessage()));
-                        else
-                            EventBus.getDefault().post(new ToastMessage("Deleted: " + databaseReference.toString()));
-                    }
-                });
-                break;
+    public synchronized void deleteObject(Object object) {
+        assert (object != null) && (object instanceof DatabaseReference);
+        DatabaseReference ref = (DatabaseReference) object;
+        ref.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if(databaseError != null)
+                    EventBus.getDefault().post(new ToastMessage(databaseError.getMessage()));
+                else
+                    EventBus.getDefault().post(new ToastMessage("Deleted: " + databaseReference.toString()));
             }
-        }*/
+        });
     }
 
     @Override
     public void deleteSelected() {
+        List<WeakReference> selectedArray = getSelected();
+
+        if(selectedArray.size() == 0) {
+            EventBus.getDefault().post(new ToastMessage("No items selected."));
+            return;
+        }
+
+        for(WeakReference<Task> weakReference: selectedArray) {
+            Task task = weakReference.get();
+            if(task != null)
+                deleteObject(Tasks.getFirebaseItemNodeRef(task.getId()));
+        }
     }
 
     /*@Override

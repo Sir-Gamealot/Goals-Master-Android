@@ -6,9 +6,13 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.ObservableSnapshotArray;
 import com.firebase.ui.database.SnapshotParser;
 import com.goalsmaster.goalsmaster.data.Task;
+import com.goalsmaster.goalsmaster.events.ToastMessage;
 import com.goalsmaster.goalsmaster.holders.BaseViewHolder;
+import com.goalsmaster.goalsmaster.holders.GoalViewHolder;
 import com.goalsmaster.goalsmaster.holders.visualstate.BaseVisualState;
 import com.google.firebase.database.Query;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -105,12 +109,23 @@ public abstract class BaseFirebaseRecyclerAdapter<T, VH extends BaseViewHolder> 
     public List<WeakReference> getSelected() {
         ArrayList<WeakReference> list = new ArrayList<>();
         for(Object obj: dataState.keySet()) {
-            list.add(new WeakReference(obj));
+            BaseVisualState state = dataState.get(obj);
+            if(state.isSelected())
+                list.add(new WeakReference(obj));
         }
         return list;
     }
 
     public abstract void deleteObject(Object object);
 
-    public abstract void deleteSelected();
+    protected void deleteSelected() {
+        List<WeakReference> selectedArray = getSelected();
+
+        if(selectedArray.size() == 0) {
+            EventBus.getDefault().post(new ToastMessage("No items selected."));
+            return;
+        }
+
+
+    }
 }
