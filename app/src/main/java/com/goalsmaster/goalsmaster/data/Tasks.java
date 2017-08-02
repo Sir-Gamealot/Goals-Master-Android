@@ -34,4 +34,8 @@ public class Tasks {
         DatabaseReference userRef = goalsRef.child(userId); // Goals/userId/children
         return userRef;
     }
+
+    public static Object getFirebaseItemNodeRef(String id) {
+        return getFirebaseNodeRef().child(id);
+    }
 }

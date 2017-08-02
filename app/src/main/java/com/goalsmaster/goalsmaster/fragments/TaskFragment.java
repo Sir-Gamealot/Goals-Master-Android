@@ -189,8 +189,17 @@ public class TaskFragment extends BaseFragment {
                     viewHolder.bind(model, viewHolder.state);
                 }
             };*/
-
-            adapter = new TaskViewAdapter(getContext(), R.layout.row_task);
+            long from = 0;
+            long to = (long) Math.min(Double.MAX_VALUE, Long.MAX_VALUE);
+            try {
+                from = StringUtils.dateFromCharSequence(dateFrom.getText()).getTime();
+                to = StringUtils.dateFromCharSequence(dateTo.getText()).getTime();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            if(adapter != null)
+                adapter.cleanup();
+            adapter = createAdapter(from, to);
             recyclerView.setAdapter(adapter);
         }
         ButterKnife.bind(this, view);
@@ -319,26 +328,6 @@ public class TaskFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void on(DeleteSelectedEvent event) {
-
-        /*List<WeakReference> selectedArray = adapter.getSelected();
-
-        if(selectedArray.size() == 0) {
-            EventBus.getDefault().post(new ToastMessage("No items selected."));
-            return;
-        }
-
-        final List<Integer> positions = new ArrayList<>();
-
-        //TaskApi api = RestApi.getTaskApi(getContext());
-        //int succeeded = 0, failed = 0;
-        ArrayList<String> list = new ArrayList<>();
-        for (WeakReference ref: selectedArray) {
-            Task selectedObject = (Task) ref.get();
-            if(selectedObject != null) {
-                list.add(selectedObject.getId());
-            }
-        }*/
-
         adapter.deleteSelected();
     }
 
@@ -357,8 +346,15 @@ public class TaskFragment extends BaseFragment {
     public void on(DateFilterChanged event) {
         Date from = StringUtils.dateFromCharSequence(dateFrom.getText());
         Date to = StringUtils.dateFromCharSequence(dateTo.getText());
-        //adapter.setDateFilters(from, to);
-        //adapter.queryData();
+        if(adapter != null)
+            adapter.cleanup();
+        createAdapter(from.getTime(), to.getTime());
+        recyclerView.setAdapter(adapter);
+    }
+
+    private TaskViewAdapter createAdapter(long fromTimestamp, long toTimestamp) {
+        adapter = new TaskViewAdapter(R.layout.row_task, fromTimestamp, toTimestamp);
+        return adapter;
     }
 
     public List<Task> getTaskList() {
