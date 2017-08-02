@@ -189,8 +189,17 @@ public class TaskFragment extends BaseFragment {
                     viewHolder.bind(model, viewHolder.state);
                 }
             };*/
-
-            adapter = new TaskViewAdapter(getContext(), R.layout.row_task);
+            long from = 0;
+            long to = (long) Math.min(Double.MAX_VALUE, Long.MAX_VALUE);
+            try {
+                from = StringUtils.dateFromCharSequence(dateFrom.getText()).getTime();
+                to = StringUtils.dateFromCharSequence(dateTo.getText()).getTime();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            if(adapter != null)
+                adapter.cleanup();
+            adapter = createAdapter(from, to);
             recyclerView.setAdapter(adapter);
         }
         ButterKnife.bind(this, view);
@@ -357,8 +366,15 @@ public class TaskFragment extends BaseFragment {
     public void on(DateFilterChanged event) {
         Date from = StringUtils.dateFromCharSequence(dateFrom.getText());
         Date to = StringUtils.dateFromCharSequence(dateTo.getText());
-        //adapter.setDateFilters(from, to);
-        //adapter.queryData();
+        if(adapter != null)
+            adapter.cleanup();
+        createAdapter(from.getTime(), to.getTime());
+        recyclerView.setAdapter(adapter);
+    }
+
+    private TaskViewAdapter createAdapter(long fromTimestamp, long toTimestamp) {
+        adapter = new TaskViewAdapter(R.layout.row_task, fromTimestamp, toTimestamp);
+        return adapter;
     }
 
     public List<Task> getTaskList() {

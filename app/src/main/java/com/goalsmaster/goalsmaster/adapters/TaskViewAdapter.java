@@ -23,28 +23,22 @@ import java.util.ArrayList;
 public class TaskViewAdapter extends BaseFirebaseRecyclerAdapter<Task, TaskViewHolder> {
 
     private static final String TAG = TaskViewAdapter.class.getSimpleName();
-    //private final Context context;
 
-    public TaskViewAdapter(Context context, int rowLayoutResourceId) {
+    /**
+     * @param rowLayoutResourceId
+     * @param fromTimestamp
+     * @param toTimestamp
+     */
+    public TaskViewAdapter(int rowLayoutResourceId, double fromTimestamp, double toTimestamp) {
         super(
                 Task.class,
                 rowLayoutResourceId,
                 TaskViewHolder.class,
-                /*FirebaseDatabase.getInstance()
-                        .getReferenceFromUrl("https://goalsmaster-e6340.firebaseio.com/Tasks/Zy90DT3yY5ZBOlx62PjiTIT8Oig2")
-                        .orderByKey()*/
                 Tasks.getFirebaseNodeRef()
                         .orderByChild("timestamp")
-                        .startAt(Double.MIN_VALUE)
-                        .endAt(Double.MAX_VALUE)
+                        .startAt(fromTimestamp)
+                        .endAt(toTimestamp)
         );
-
-            /*Query query = Tasks.getFirebaseNodeRef(getContext())
-                    .orderByChild("timestamp")
-                    .startAt(Double.MIN_VALUE)
-                    .endAt(Double.MAX_VALUE);*/
-
-        //this.context = context;
     }
 
     @Override
@@ -76,7 +70,6 @@ public class TaskViewAdapter extends BaseFirebaseRecyclerAdapter<Task, TaskViewH
 
     @Override
     public void deleteSelected() {
-
     }
 
     /*@Override
@@ -133,45 +126,6 @@ public class TaskViewAdapter extends BaseFirebaseRecyclerAdapter<Task, TaskViewH
             oldSelections[i] = list.get(i);
         }
         Arrays.sort(oldSelections);
-    }
-
-
-    public void queryData() {
-//        DatabaseReference tasksRef = Tasks.getFirebaseNodeRef(context);
-//        tasksRef.orderByChild("timestamp")
-//                .startAt(filterDateFrom.getTime())
-//                .endAt(filterDateTo.getTime())
-//                .addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot tasksSnapshot) {
-//                    if (tasksSnapshot.exists()) {
-//                        data.clear();
-//                        for (DataSnapshot issue : tasksSnapshot.getChildren()) {
-//                            GenericTypeIndicator<Task> t = new GenericTypeIndicator<Task>() {};
-//                            Task task = issue.getValue(t);
-//                            data.add(task);
-//                        }
-//                        dataState = new HashMap<Task, TaskViewHolder.TaskVisualState>(data.size());
-//                        for (int i = 0; i < data.size(); i++) {
-//                            TaskViewHolder.TaskVisualState visualState = new TaskViewHolder.TaskVisualState();
-//                            Task task = data.get(i);
-//                            int val = Arrays.binarySearch(oldSelections, (int)task.getId().hashCode());
-//                            if(val >= 0) {
-//                                visualState.onoff = true;
-//                            }
-//                            dataState.put(task, visualState);
-//                        }
-//                        notifyItemRangeChanged(0, data.size());
-//                    }
-//                }
-//
-//                @Override
-//                public void onCancelled(DatabaseError databaseError) {
-//                    data.clear();
-//                    dataState = new HashMap<Task, TaskViewHolder.TaskVisualState>(0);
-//                    notifyDataSetChanged();
-//                }
-//        });
     }
 
 //    @Override
